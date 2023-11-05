@@ -1,0 +1,71 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Source\BoundedContext\Feature\Application\" />
+    <Folder Include="Source\BoundedContext\Feature\Domain\" />
+    <Folder Include="Source\BoundedContext\Feature\Infrastructure\" />
+    <Folder Include="Source\BoundedContext\Feature\UserInterface\" />
+    <Folder Include="Source\IdentityManaging\AccountRegistrar\Application\" />
+    <Folder Include="Source\IdentityManaging\AccountRegistrar\Infrastructure\" />
+    <Folder Include="Source\IdentityManaging\AccountRegistrar\UserInterface\" />
+    <Folder Include="Source\IdentityManaging\NoteKeeper\Application\" />
+    <Folder Include="Source\IdentityManaging\NoteKeeper\Domain\" />
+    <Folder Include="Source\IdentityManaging\NoteKeeper\Infrastructure\" />
+    <Folder Include="Source\IdentityManaging\NoteKeeper\UserInterface\" />
+    <Folder Include="Source\NoteTaking\FieldCoordinator\Application\" />
+    <Folder Include="Source\NoteTaking\FieldCoordinator\UserInterface\" />
+    <Folder Include="Source\NoteTaking\NodeEditor\UserInterface\" />
+    <Folder Include="Source\NoteViewing\Feature\Application\" />
+    <Folder Include="Source\NoteViewing\Feature\Domain\" />
+    <Folder Include="Source\NoteViewing\Feature\Infrastructure\" />
+    <Folder Include="Source\NoteViewing\Feature\UserInterface\" />
+    <Folder Include="Source\ServiceOrchestrating\MainAppService\Application\" />
+    <Folder Include="Source\ServiceOrchestrating\MainAppService\Infrastructure\" />
+    <Folder Include="Source\ServiceOrchestrating\MainAppService\UserInterface\" />
+    <Folder Include="Source\ServiceOrchestrating\ServiceAssembly\Domain\" />
+    <Folder Include="Source\ServiceOrchestrating\ServiceAssembly\Infrastructure\" />
+    <Folder Include="Source\ServiceOrchestrating\ServiceAssembly\UserInterface\" />
+    <Folder Include="Source\WindowFounding\ConfigurationDialog\Application\" />
+    <Folder Include="Source\WindowFounding\ConfigurationDialog\Domain\" />
+    <Folder Include="Source\WindowFounding\ConfigurationDialog\Infrastructure\" />
+    <Folder Include="Source\WindowFounding\ConfigurationDialog\UserInterface\" />
+    <Folder Include="Source\WindowFounding\MainWindow\Application\" />
+    <Folder Include="Source\WindowFounding\MainWindow\Domain\" />
+    <Folder Include="Source\WindowFounding\MainWindow\Infrastructure\" />
+    <Folder Include="Source\WindowFounding\MainWindow\UserInterface\" />
+    <Folder Include="Source\WindowFounding\StartupScreen\Application\" />
+    <Folder Include="Source\WindowFounding\StartupScreen\Domain\" />
+    <Folder Include="Source\WindowFounding\StartupScreen\Infrastructure\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.13" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
