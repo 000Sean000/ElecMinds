@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Sqlite;
 
 #region Dependency
 using NoteTaking.Domain;
@@ -14,11 +15,11 @@ namespace NoteTaking.Infrastructure
 {
 	public class NodeDbContext : DbContext
 	{
-		public DbSet<NodeData> NodeData { get; set; }
+		public DbSet<Object> Objects { get; set; }
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
-			optionsBuilder.UseSQLite("Data Source=database.db;");
+			optionsBuilder.UseSqlite("Data Source=database.db;");
 		}
 	}
 
