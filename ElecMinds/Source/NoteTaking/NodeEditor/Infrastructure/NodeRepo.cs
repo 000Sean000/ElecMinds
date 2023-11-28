@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
 #region Dependency
 using NoteTaking.Domain;
 
@@ -10,6 +12,16 @@ using NoteTaking.Domain;
 
 namespace NoteTaking.Infrastructure
 {
+	public class NodeDbContext : DbContext
+	{
+		public DbSet<NodeData> NodeData { get; set; }
+
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			optionsBuilder.UseSQLite("Data Source=database.db;");
+		}
+	}
+
 	public class NodeRepository: INodeRepository
 	{
 		protected readonly IServiceProvider _serviceProvider;
@@ -42,4 +54,8 @@ namespace NoteTaking.Infrastructure
 
 		}
 	}
+
+
+
+
 }
