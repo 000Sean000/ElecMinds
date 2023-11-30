@@ -65,9 +65,9 @@ namespace InteractionDirecting.API
 		public InteractionAPI(IServiceProvider serviceProvider)
 		{
 
-			EBus = (EventBus)serviceProvider.GetServices<EventBus>();
-			CQBus = (CommandQueryBus)serviceProvider.GetServices<CommandQueryBus>(); ;
-			Director = (UndoRedoDirector)serviceProvider.GetServices<UndoRedoDirector>(); ;
+			EBus = (EventBus)serviceProvider.GetRequiredService<EventBus>();
+			CQBus = (CommandQueryBus)serviceProvider.GetRequiredService<CommandQueryBus>(); ;
+			Director = (UndoRedoDirector)serviceProvider.GetRequiredService<UndoRedoDirector>(); ;
 			///Director = new UndoRedoDirector(); // multi-director for separate field/vault/scope
 
 

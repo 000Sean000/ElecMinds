@@ -12,6 +12,8 @@ using AutoMapper;
 
 
 #region Dependency
+
+using Config;
 using DTOs;
 using EvntObj;
 using InteractionDirecting.API;
@@ -22,112 +24,112 @@ using NoteTaking.Domain;
 
 namespace NoteTaking.API
 {
-	public class NodeProfile : Profile
+	public class NeuronProfile : Profile
 	{
-		public NodeProfile()
+		public NeuronProfile()
 		{
-			CreateMap<NodeData, NodeDTO>().ReverseMap();
+			CreateMap<NeuronData, NeuronDTO>().ReverseMap();
 			CreateMap<NoteSegment, NoteSegmentDTO>().ReverseMap();
 			CreateMap<NoteData, NoteDTO>().ReverseMap();
 			CreateMap<LinkData, LinkDTO>().ReverseMap();
 			CreateMap<ReferenceData, ReferenceDTO>().ReverseMap();
 		}
 	}
-	public interface INodeEditorAPI
+	public interface INeuronEditorAPI
 	{
-		public Guid CreateNewNode();
-		public void DeleteNode(Guid nodeId);
-		public NodeDTO ReadNode(Guid nodeId);
-		public void WriteNode(Guid nodeId, NodeDTO nodeDTO);
-		public NoteDTO ReadNoteOfNode(Guid nodeId);
-		public void WriteNoteOfNode(Guid nodeId, NoteDTO noteDTO, Dictionary<Guid, ReferenceDTO> newReferenceDTOPairs);
-		public bool DoesReferencenRecurseInNode(Guid nodeId, Guid referenceNodeId);
-		public LinkDTO ReadLinkOfNode(Guid nodeId, Guid linkId);
-		public void WriteLinkOfNode(Guid nodeId, Guid linkId, LinkDTO linkDTO);
-		public void AddLinkToNode(Guid nodeId, Guid linkId, LinkDTO linkDTO);
-		public void RemoveLinkFromNode(Guid nodeId, Guid linkId);
+		public TID CreateNewNeuron();
+		public void DeleteNeuron(TID neuronId);
+		public NeuronDTO ReadNeuron(TID neuronId);
+		public void WriteNeuron(TID neuronId, NeuronDTO neuronDTO);
+		public NoteDTO ReadNoteOfNeuron(TID neuronId);
+		public void WriteNoteOfNeuron(TID neuronId, NoteDTO noteDTO, Dictionary<TID, ReferenceDTO> newReferenceDTOPairs);
+		public bool DoesReferencenRecurseInNeuron(TID neuronId, TID referenceNeuronId);
+		public LinkDTO ReadLinkOfNeuron(TID neuronId, TID linkId);
+		public void WriteLinkOfNeuron(TID neuronId, TID linkId, LinkDTO linkDTO);
+		public void AddLinkToNeuron(TID neuronId, TID linkId, LinkDTO linkDTO);
+		public void RemoveLinkFromNeuron(TID neuronId, TID linkId);
 
 
 	}
 	
-	public class NodeEditorAPI:INodeEditorAPI
+	public class NeuronEditorAPI:INeuronEditorAPI
 	{
 		protected readonly IServiceProvider _serviceProvider;
-		protected NodeApplicationService _nodeAS;
+		protected NeuronApplicationService _neuronAS;
 		protected InteractionDirecting.API.IInteractionAPI _interactionAPI;
 
 		public IMapper Mapper { get; set; }
 
-		public NodeEditorAPI(IServiceProvider serviceProvider)
+		public NeuronEditorAPI(IServiceProvider serviceProvider)
 		{
 			_serviceProvider = serviceProvider;
-			_nodeAS = serviceProvider.GetService<NodeApplicationService>();
+			_neuronAS = serviceProvider.GetService<NeuronApplicationService>();
 			_interactionAPI = serviceProvider.GetService<InteractionDirecting.API.IInteractionAPI>();
 
 			var mapperConfig = new MapperConfiguration(cfg =>
 			{
-				cfg.AddProfile<NodeProfile>();
+				cfg.AddProfile<NeuronProfile>();
 			});
 			Mapper = mapperConfig.CreateMapper();
 		}
 
-		#region Node		
-		public Guid CreateNewNode()
+		#region Neuron		
+		public TID CreateNewNeuron()
 		{
-			Guid nodeId = _nodeAS.CreateNewNode();
+			TID neuronId = _neuronAS.CreateNewNeuron();
 
-			NodeCreated nodeCreated = new NodeCreated() { NodeId = nodeId };
-			_interactionAPI.EBusPublish<NodeCreated>(nodeCreated);
+			NeuronCreated neuronCreated = new NeuronCreated() { NeuronId = neuronId };
+			_interactionAPI.EBusPublish<NeuronCreated>(neuronCreated);
 
-			return nodeId;
+			return neuronId;
 		}
-		public void DeleteNode(Guid nodeId)
+		public void DeleteNeuron(TID neuronId)
 		{
-			_nodeAS.DeleteNode(nodeId);
+			_neuronAS.DeleteNeuron(neuronId);
 
-			NodeDeleted nodeDeleted = new NodeDeleted() { NodeId = nodeId };
-			_interactionAPI.EBusPublish<NodeDeleted>(nodeDeleted);
+			NeuronDeleted neuronDeleted = new NeuronDeleted() { NeuronId = neuronId };
+			_interactionAPI.EBusPublish<NeuronDeleted>(neuronDeleted);
 		}
-		public NodeDTO ReadNode(Guid nodeId)
+		public NeuronDTO ReadNeuron(TID neuronId)
 		{
-			NodeData nodeData = _nodeAS.ReadNode(nodeId);
-			NodeDTO nodeDTO = Mapper.Map<NodeDTO>(nodeData);
-			NodeRead nodeRead = new NodeRead() { NodeId = nodeId, NodeDTO = nodeDTO };
-			_interactionAPI.EBusPublish<NodeRead>(nodeRead);
-			return nodeDTO;
+			NeuronData neuronData = _neuronAS.ReadNeuron(neuronId);
+			NeuronDTO neuronDTO = Mapper.Map<NeuronDTO>(neuronData);
+			NeuronRead neuronRead = new NeuronRead() { NeuronId = neuronId, NeuronDTO = neuronDTO };
+			_interactionAPI.EBusPublish<NeuronRead>(neuronRead);
+			return neuronDTO;
 		}
-		public void WriteNode(Guid nodeId, NodeDTO nodeDTO)
+		public void WriteNeuron(TID neuronId, NeuronDTO neuronDTO)
 		{
-			NodeData nodeData = Mapper.Map<NodeData>(nodeDTO);
-			_nodeAS.WriteNode(nodeId, nodeData);
-			NodeWritten nodeWritten = new NodeWritten() { NodeId = nodeId, NodeDTO = nodeDTO };
-			_interactionAPI.EBusPublish<NodeWritten>(nodeWritten);
+			NeuronData neuronData = Mapper.Map<NeuronData>(neuronDTO);
+			_neuronAS.WriteNeuron(neuronId, neuronData);
+			NeuronWritten neuronWritten = new NeuronWritten() { NeuronId = neuronId, NeuronDTO = neuronDTO };
+			_interactionAPI.EBusPublish<NeuronWritten>(neuronWritten);
 
 		}
 		#endregion
 
 		#region Note
-		public NoteDTO ReadNoteOfNode(Guid nodeId)
+		public NoteDTO ReadNoteOfNeuron(TID neuronId)
 		{
-			NoteData noteData = _nodeAS.ReadNoteOfNode(nodeId);
+			NoteData noteData = _neuronAS.ReadNoteOfNeuron(neuronId);
 			NoteDTO noteDTO = Mapper.Map<NoteDTO>(noteData);
-			NoteRead noteRead = new NoteRead() { NodeId = nodeId, NoteDTO = noteDTO };
+			NoteRead noteRead = new NoteRead() { NeuronId = neuronId, NoteDTO = noteDTO };
 			_interactionAPI.EBusPublish<NoteRead>(noteRead);
 			return noteDTO;
 		}
-		public void WriteNoteOfNode(Guid nodeId, NoteDTO noteDTO, Dictionary<Guid, ReferenceDTO> newReferenceDTOPairs)
+		public void WriteNoteOfNeuron(TID neuronId, NoteDTO noteDTO, Dictionary<TID, ReferenceDTO> newReferenceDTOPairs)
 		{
 			NoteData noteData = Mapper.Map<NoteData>(noteDTO);
-			Dictionary<Guid, ReferenceData> newReferenceData = Mapper.Map<Dictionary<Guid, ReferenceData>>(newReferenceDTOPairs);
-			_nodeAS.WriteNoteOfNode(nodeId, noteData, newReferenceData);
-			NoteWritten noteWritten = new NoteWritten() { NodeId = nodeId, NoteDTO = noteDTO, NewReferenceDTOPairs = newReferenceDTOPairs };
+			Dictionary<TID, ReferenceData> newReferenceData = Mapper.Map<Dictionary<TID, ReferenceData>>(newReferenceDTOPairs);
+			_neuronAS.WriteNoteOfNeuron(neuronId, noteData, newReferenceData);
+			NoteWritten noteWritten = new NoteWritten() { NeuronId = neuronId, NoteDTO = noteDTO, NewReferenceDTOPairs = newReferenceDTOPairs };
 			_interactionAPI.EBusPublish<NoteWritten>(noteWritten);
 
 		}
-		public bool DoesReferencenRecurseInNode(Guid nodeId, Guid referenceNodeId)
+		public bool DoesReferencenRecurseInNeuron(TID neuronId, TID referenceNeuronId)
 		{
-			bool isRecursion = _nodeAS.DoesReferencenRecurseInNode(nodeId, referenceNodeId);
-			ReferenceRecurses referenceRecurses = new ReferenceRecurses() { NodeId = nodeId, ReferenceNodeId = referenceNodeId };
+			bool isRecursion = _neuronAS.DoesReferencenRecurseInNeuron(neuronId, referenceNeuronId);
+			ReferenceRecurses referenceRecurses = new ReferenceRecurses() { NeuronId = neuronId, ReferenceNeuronId = referenceNeuronId };
 			_interactionAPI.EBusPublish<ReferenceRecurses>(referenceRecurses);
 			return isRecursion;
 		}
@@ -135,32 +137,32 @@ namespace NoteTaking.API
 		#endregion
 
 		#region Link 
-		public LinkDTO ReadLinkOfNode(Guid nodeId, Guid linkId)
+		public LinkDTO ReadLinkOfNeuron(TID neuronId, TID linkId)
 		{
-			LinkData linkData = _nodeAS.ReadLinkOfNode(nodeId, linkId);
+			LinkData linkData = _neuronAS.ReadLinkOfNeuron(neuronId, linkId);
 			LinkDTO linkDTO = Mapper.Map<LinkDTO>(linkData);
-			LinkRead linkRead = new LinkRead() { NodeId = nodeId, LinkId = linkId, LinkDTO = linkDTO };
+			LinkRead linkRead = new LinkRead() { NeuronId = neuronId, LinkId = linkId, LinkDTO = linkDTO };
 			_interactionAPI.EBusPublish<LinkRead>(linkRead);
 			return linkDTO;
 		}
-		public void WriteLinkOfNode(Guid nodeId, Guid linkId, LinkDTO linkDTO)
+		public void WriteLinkOfNeuron(TID neuronId, TID linkId, LinkDTO linkDTO)
 		{
 			LinkData linkData = Mapper.Map<LinkData>(linkDTO);
-			_nodeAS.WriteLinkOfNode(nodeId, linkId, linkData);
-			LinkWritten linkWritten = new LinkWritten() { NodeId = nodeId, LinkId = linkId, LinkDTO = linkDTO };
+			_neuronAS.WriteLinkOfNeuron(neuronId, linkId, linkData);
+			LinkWritten linkWritten = new LinkWritten() { NeuronId = neuronId, LinkId = linkId, LinkDTO = linkDTO };
 			_interactionAPI.EBusPublish<LinkWritten>(linkWritten);
 		}
-		public void AddLinkToNode(Guid nodeId, Guid linkId, LinkDTO linkDTO)
+		public void AddLinkToNeuron(TID neuronId, TID linkId, LinkDTO linkDTO)
 		{
 			LinkData linkData = Mapper.Map<LinkData>(linkDTO);
-			_nodeAS.AddLinkToNode(nodeId, linkId, linkData);
-			LinkAdded linkAdded = new LinkAdded() { NodeId = nodeId, LinkId = linkId, LinkDTO = linkDTO };
+			_neuronAS.AddLinkToNeuron(neuronId, linkId, linkData);
+			LinkAdded linkAdded = new LinkAdded() { NeuronId = neuronId, LinkId = linkId, LinkDTO = linkDTO };
 			_interactionAPI.EBusPublish<LinkAdded>(linkAdded);
 		}
-		public void RemoveLinkFromNode(Guid nodeId, Guid linkId)
+		public void RemoveLinkFromNeuron(TID neuronId, TID linkId)
 		{
-			_nodeAS.RemoveLinkFromNode(nodeId, linkId);
-			LinkRemoved linkRemoved = new LinkRemoved() { NodeId = nodeId, LinkId = linkId };
+			_neuronAS.RemoveLinkFromNeuron(neuronId, linkId);
+			LinkRemoved linkRemoved = new LinkRemoved() { NeuronId = neuronId, LinkId = linkId };
 			_interactionAPI.EBusPublish<LinkRemoved>(linkRemoved);
 		}
 		#endregion

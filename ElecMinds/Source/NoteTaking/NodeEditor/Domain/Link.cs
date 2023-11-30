@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using DTOs;
 
 #region Dependency
+
+using Config;
 using Enums;
 #endregion
 
@@ -14,9 +16,9 @@ namespace NoteTaking.Domain
 	
 	public class LinkData: ILinkDTO
 	{
-		public Guid? Id { get; set; }
-		public Guid? SourceNodeId { get; set; } // will be used by target node to check back
-		public Guid? TargetNodeId { get; set; }
+		public TID? Id { get; set; }
+		public TID? SourceNeuronId { get; set; } // will be used by target neuron to check back
+		public TID? TargetNeuronId { get; set; }
 		public ELinkType? LinkType { get; set; }
 		public Dictionary<ELinkInfoIndex, string>? LinkInfo { get; set; }
 
@@ -37,13 +39,13 @@ namespace NoteTaking.Domain
 			{
 				Id = linkData.Id;
 			}
-			if (linkData.SourceNodeId != null)
+			if (linkData.SourceNeuronId != null)
 			{
-				SourceNodeId = linkData.SourceNodeId;
+				SourceNeuronId = linkData.SourceNeuronId;
 			}
-			if (linkData.TargetNodeId != null)
+			if (linkData.TargetNeuronId != null)
 			{
-				TargetNodeId = linkData.TargetNodeId;
+				TargetNeuronId = linkData.TargetNeuronId;
 			}
 			
 			if (linkData.LinkType != null ) 
@@ -60,8 +62,8 @@ namespace NoteTaking.Domain
 			///linkData = linkData.DeepCopy();
 			
 			Id = linkData.Id;
-			SourceNodeId = linkData.SourceNodeId;
-			TargetNodeId = linkData.TargetNodeId;
+			SourceNeuronId = linkData.SourceNeuronId;
+			TargetNeuronId = linkData.TargetNeuronId;
 			LinkType = linkData.LinkType;
 			LinkInfo = linkData.LinkInfo;
 
@@ -77,8 +79,8 @@ namespace NoteTaking.Domain
 			LinkData linkData = new LinkData();
 
 			linkData.Id = Id;
-			linkData.SourceNodeId = SourceNodeId;
-			linkData.TargetNodeId = TargetNodeId;
+			linkData.SourceNeuronId = SourceNeuronId;
+			linkData.TargetNeuronId = TargetNeuronId;
 			linkData.LinkType = LinkType;
 			if (LinkInfo == null)
 			{
@@ -111,15 +113,15 @@ namespace NoteTaking.Domain
 		{
 			if (Id == null)
 			{
-				Id = default(Guid);
+				Id = default(TID);
 			}
-			if (SourceNodeId == null)
+			if (SourceNeuronId == null)
 			{
-				SourceNodeId = default(Guid);
+				SourceNeuronId = default(TID);
 			}
-			if (TargetNodeId == null)
+			if (TargetNeuronId == null)
 			{
-				TargetNodeId = default(Guid);
+				TargetNeuronId = default(TID);
 			}
 			if (LinkType == null)
 			{

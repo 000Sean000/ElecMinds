@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 #region Dependency
+
+using Config;
 using BasicService.API;
 using NoteTaking.API;
 using NoteTaking.Domain;
@@ -35,10 +37,10 @@ namespace ServiceOrchestrating.Application
 			#endregion
 
 			#region Note Taking
-			ServiceCollection.AddSingleton<INodeEditorAPI, NodeEditorAPI>();
-			ServiceCollection.AddSingleton<INodeRepository, NodeRepository>();
-			ServiceCollection.AddSingleton<NodeDomainService>();
-			ServiceCollection.AddSingleton<NodeApplicationService>();
+			ServiceCollection.AddSingleton<INeuronEditorAPI, NeuronEditorAPI>();
+			ServiceCollection.AddSingleton<INeuronRepository, SQLiteNeuronRepository>();
+			ServiceCollection.AddSingleton<NeuronDomainService>();
+			ServiceCollection.AddSingleton<NeuronApplicationService>();
 
 			#endregion
 

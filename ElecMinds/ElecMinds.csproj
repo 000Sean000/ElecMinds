@@ -22,7 +22,7 @@
     <Folder Include="Source\IdentityManaging\NoteKeeper\UserInterface\" />
     <Folder Include="Source\NoteTaking\FieldCoordinator\Application\" />
     <Folder Include="Source\NoteTaking\FieldCoordinator\UserInterface\" />
-    <Folder Include="Source\NoteTaking\NodeEditor\UserInterface\" />
+    <Folder Include="Source\NoteTaking\NeuronEditor\UserInterface\" />
     <Folder Include="Source\NoteViewing\Feature\Application\" />
     <Folder Include="Source\NoteViewing\Feature\Domain\" />
     <Folder Include="Source\NoteViewing\Feature\Infrastructure\" />

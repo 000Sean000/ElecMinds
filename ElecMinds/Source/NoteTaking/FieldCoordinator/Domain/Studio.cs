@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 #region Dependency
 using Const;
-
+using Config;
 #endregion
 
 namespace NoteTaking.Domain
@@ -14,12 +14,12 @@ namespace NoteTaking.Domain
 	public interface IStudioRepository
 	{
 		public Studio CreateStudio();
-		public Studio FetchStudio(Guid studioId);
+		public Studio FetchStudio(TID studioId);
 	}
 
 	public class StudioData
 	{
-		public Guid? Id { get; set; }
+		public TID? Id { get; set; }
 		public string? Name { get; set; }
 		public string? DirPath { get; set; } // Directory Path
 		public StudioData() { }

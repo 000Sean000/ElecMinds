@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Enums
 {
-	public enum ENodeClass
+	public enum ENeuronClass
 	{
 		Basic, Group, Template, Instance, Database, Options, Selections
 	}

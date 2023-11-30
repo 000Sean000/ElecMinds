@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using DTOs;
 
 #region Dependency
+
+using Config;
 using Enums;
 #endregion
 
@@ -14,12 +16,12 @@ namespace NoteTaking.Domain
 	public class NoteSegment: INoteSegmentDTO
 	{
 		public string? Text { get; set; }
-		public Guid? ReferenceId { get; set; }
+		public TID? ReferenceId { get; set; }
 		public NoteSegment()
 		{
 
 		}
-		public NoteSegment(Guid referenceId)
+		public NoteSegment(TID referenceId)
 		{
 			ReferenceId = referenceId;
 		}
@@ -150,7 +152,7 @@ namespace NoteTaking.Domain
 				}
 			}
 		}
-		public void ExpireDereference(Guid referenceId)
+		public void ExpireDereference(TID referenceId)
 		{
 			foreach (var seg in Segments)
 			{

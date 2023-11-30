@@ -8,6 +8,7 @@ using static System.Resources.ResXFileRef;
 #region Dependency
 using Enums;
 using DTOs;
+using Config;
 #endregion
 
 namespace NoteTaking.Domain
@@ -29,9 +30,9 @@ namespace NoteTaking.Domain
 	}
 	public class ReferenceData: IReferenceDTO
 	{
-		public Guid? Id { get; set; }
-		public Guid? SourceNodeId { get; set; } // will be used by target node to check back
-		public Guid? TargetNodeId { get; set; }
+		public TID? Id { get; set; }
+		public TID? SourceNeuronId { get; set; } // will be used by target neuron to check back
+		public TID? TargetNeuronId { get; set; }
 		public EDereferencerType? DereferencerType { get; set; }
 
 
@@ -51,13 +52,13 @@ namespace NoteTaking.Domain
 			{
 				Id = referenceData.Id;
 			}
-			if (referenceData.SourceNodeId != null)
+			if (referenceData.SourceNeuronId != null)
 			{
-				SourceNodeId = referenceData.SourceNodeId;
+				SourceNeuronId = referenceData.SourceNeuronId;
 			}
-			if (referenceData.TargetNodeId != null)
+			if (referenceData.TargetNeuronId != null)
 			{
-				TargetNodeId = referenceData.TargetNodeId;
+				TargetNeuronId = referenceData.TargetNeuronId;
 			}
 			
 			if (referenceData.DereferencerType != null)
@@ -70,8 +71,8 @@ namespace NoteTaking.Domain
 			///referenceData = referenceData.DeepCopy();
 
 			Id = referenceData.Id;
-			SourceNodeId = referenceData.SourceNodeId;
-			TargetNodeId = referenceData.TargetNodeId;
+			SourceNeuronId = referenceData.SourceNeuronId;
+			TargetNeuronId = referenceData.TargetNeuronId;
 			DereferencerType = referenceData.DereferencerType;
 
 		}
@@ -86,8 +87,8 @@ namespace NoteTaking.Domain
 			ReferenceData referenceData = new ReferenceData();
 
 			referenceData.Id = Id;
-			referenceData.SourceNodeId = SourceNodeId;
-			referenceData.TargetNodeId = TargetNodeId;
+			referenceData.SourceNeuronId = SourceNeuronId;
+			referenceData.TargetNeuronId = TargetNeuronId;
 			referenceData.DereferencerType = DereferencerType;
 			return referenceData;
 		}
@@ -110,15 +111,15 @@ namespace NoteTaking.Domain
 		{
 			if (Id == null)
 			{
-				Id = default(Guid);
+				Id = default(TID);
 			}
-			if (SourceNodeId == null)
+			if (SourceNeuronId == null)
 			{
-				SourceNodeId = default(Guid);
+				SourceNeuronId = default(TID);
 			}
-			if (TargetNodeId == null)
+			if (TargetNeuronId == null)
 			{
-				TargetNodeId = default(Guid);
+				TargetNeuronId = default(TID);
 			}
 			if (DereferencerType == null)
 			{
