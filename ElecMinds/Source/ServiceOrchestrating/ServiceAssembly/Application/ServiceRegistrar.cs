@@ -30,7 +30,7 @@ namespace ServiceOrchestrating.Application
 			ServiceProvider = BasicAPI.ServiceProvider;
 
 			#region Interactoin Directing
-			ServiceCollection.AddSingleton<IInteractionAPI,InteractionAPI>();
+			ServiceCollection.AddSingleton<IInteractionAPI, InteractionAPI>();
 			ServiceCollection.AddSingleton<EventBus>();
 			ServiceCollection.AddSingleton<CommandQueryBus>();
 			ServiceCollection.AddSingleton<UndoRedoDirector>();
@@ -38,7 +38,8 @@ namespace ServiceOrchestrating.Application
 
 			#region Note Taking
 			ServiceCollection.AddSingleton<INeuronEditorAPI, NeuronEditorAPI>();
-			ServiceCollection.AddSingleton<INeuronRepository, SQLiteNeuronRepository>();
+			ServiceCollection.AddSingleton<INeuronRepository, NeuronRepository>();
+			///ServiceCollection.AddDbContext<SQLiteNeuronDbContext>(serviceProvider =>{return new SQLiteNeuronDbContext(""); });
 			ServiceCollection.AddSingleton<NeuronDomainService>();
 			ServiceCollection.AddSingleton<NeuronApplicationService>();
 

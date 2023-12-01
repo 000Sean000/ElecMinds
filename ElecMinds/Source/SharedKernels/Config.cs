@@ -5,10 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 #region Type Config
 using TypeID = System.Int64;
+using TypeDbContext = NoteTaking.Infrastructure.SQLiteNeuronDbContext;
 #endregion
 namespace Config
 {
-
+	public class TDbContext:TypeDbContext
+	{
+		public TDbContext(string connectionString) : base(connectionString) { }
+	}
 	public struct TID
 	{
 		private TypeID _value;
@@ -39,9 +43,7 @@ namespace Config
 			return false;
 		}
 
-		// Override GetHashCode method
-		public override int GetHashCode() => _value.GetHashCode();
-
+		
 
 		// Equality operators
 		public static bool operator ==(TID left, TID right) => left.Equals(right);

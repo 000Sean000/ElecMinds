@@ -17,14 +17,16 @@ using Enums;
 
 namespace NoteTaking.Domain
 {
-	public interface INeuronRepository
+	public interface INeuronRepository // be used by NeuronDomainService
 	{
-		public Neuron CreateNeuron();
-		public TID CreateLinkInNeuron(TID neuronId);
-		public TID CreateReferenceInNeuron(TID neuronId); 
-		public Neuron FetchNeuron(TID neuronId);
+		public void ConnectStudioDB(string studioDBPath); // connect database of the specified Studio
+		public Neuron CreateNeuron(); // insert an empty Neuron into database table, then return the instanciated Neuron
+		public TID CreateLinkInNeuron(TID neuronId); // insert an empty Link into database table, then return the ID of created Link to let NeuronDomainService manage aggregate
+		public TID CreateReferenceInNeuron(TID neuronId); // insert an empty Reference into database table, then return the ID of created Reference to let NeuronDomainService manage aggregate
+		public Neuron FetchNeuron(TID neuronId); // Fetch Neuron by ID from database or cache
 		public void DeleteNeuron(TID neuronId);
 		public void RecoverNeuron(NeuronData neuronData); // Undo DeleteNeuron()
+		public void SaveChanges(); // only save changes to database in User's order
 	}
 
 	// don't return Aggregate instance to outside, just return data instance

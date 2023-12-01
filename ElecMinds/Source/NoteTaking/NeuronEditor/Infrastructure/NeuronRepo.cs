@@ -18,29 +18,41 @@ using NoteTaking.Domain;
 
 namespace NoteTaking.Infrastructure
 {
-	public class NeuronDbContext : DbContext
+	public class SQLiteNeuronDbContext : DbContext
 	{
-		public DbSet<NeuronData> NeuronData { get; set; }
+		protected readonly string _connectionString;
+		public DbSet<NodeData> NodeData { get; set; }
 		public DbSet<LinkData> LinkData { get; set; }
 		public DbSet<ReferenceData> ReferenceData { get; set; }
-
+		public SQLiteNeuronDbContext(string connectionString)
+		{
+			_connectionString = connectionString;
+		}
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
-			optionsBuilder.UseSqlite("Data Source=NeuronRepo.db;");
+			optionsBuilder.UseSqlite($"Data Source={_connectionString}");
 		}
 	}
 
-	public class SQLiteNeuronRepository: INeuronRepository
+	public class NeuronRepository: INeuronRepository 
 	{
 		protected readonly IServiceProvider _serviceProvider;
-		protected readonly NeuronDbContext _dbContext = new NeuronDbContext();
-		public SQLiteNeuronRepository(IServiceProvider serviceProvider)
+		protected TDbContext? _context;
+		
+		public NeuronRepository(IServiceProvider serviceProvider)
 		{
 			_serviceProvider = serviceProvider;
 
 		}
+		public void ConnectStudioDB(string studioDBPath)
+		{
+			string connectionString = $"{studioDBPath}";
+			_context = new TDbContext(connectionString);
+		}
+
 		public Neuron CreateNeuron()
 		{			
+			NodeData nodeData = new NodeData();
 			return new Neuron(new NeuronData());////
 		}
 		public TID CreateLinkInNeuron(TID neuronId)
@@ -65,11 +77,7 @@ namespace NoteTaking.Infrastructure
 		{
 
 		}
-		protected Neuron LoadNeuron(TID neuronId)
-		{
-			return new Neuron(new NeuronData());////
-		}
-		protected void SaveNeuron(TID neuronId)
+		public void SaveChanges()
 		{
 
 		}

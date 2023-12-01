@@ -4,6 +4,7 @@ using Enums;
 using NoteTaking.Domain;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace NoteTaking.Domain
 
 	public class NodeData : INodeDTO<NoteData, NoteSegment>
 	{
-
+		[Key]
 		public TID? Id { get; set; }
 		public ENeuronClass? NeuronClass { get; set; }
 		public string? ImagePath { get; set; }

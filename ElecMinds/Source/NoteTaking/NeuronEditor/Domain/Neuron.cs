@@ -159,8 +159,6 @@ namespace NoteTaking.Domain
 	
 	public interface INeuronAggregate
 	{
-
-
 		#region Note
 		public void WriteNote(NoteData data);
 		public NoteData ReadNote();
@@ -180,7 +178,6 @@ namespace NoteTaking.Domain
 		public void AddReference(TID referenceId, ReferenceData referenceData);
 		public void RemoveReference(TID referenceId);
 		#endregion
-
 	}
 	public interface INeuronDomainService
 	{

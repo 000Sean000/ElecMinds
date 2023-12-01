@@ -1,2 +1,4 @@
-﻿call Neuron Aggregate as Neuron
+﻿re-define domain model with ICollection to fit entity framework automation
+
+call Neuron Aggregate as Neuron
 add TID generic
