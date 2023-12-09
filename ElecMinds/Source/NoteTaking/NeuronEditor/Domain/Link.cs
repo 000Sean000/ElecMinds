@@ -10,6 +10,7 @@ using DTOs;
 using Config;
 using Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 #endregion
 
 namespace NoteTaking.Domain
@@ -17,10 +18,10 @@ namespace NoteTaking.Domain
 	
 	public class LinkData: ILinkDTO
 	{
-		[Key]
 		public TID? Id { get; set; }
 		public TID? SourceNeuronId { get; set; } // will be used by target neuron to check back
 		public TID? TargetNeuronId { get; set; }
+
 		public ELinkType? LinkType { get; set; }
 		public Dictionary<ELinkInfoIndex, string>? LinkInfo { get; set; }
 

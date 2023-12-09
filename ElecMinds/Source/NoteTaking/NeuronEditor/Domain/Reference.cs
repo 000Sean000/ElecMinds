@@ -31,7 +31,6 @@ namespace NoteTaking.Domain
 	}
 	public class ReferenceData: IReferenceDTO
 	{
-		[Key]
 		public TID? Id { get; set; }
 		public TID? SourceNeuronId { get; set; } // will be used by target neuron to check back
 		public TID? TargetNeuronId { get; set; }

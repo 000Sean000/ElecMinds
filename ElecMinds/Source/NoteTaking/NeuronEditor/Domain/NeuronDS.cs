@@ -23,8 +23,10 @@ namespace NoteTaking.Domain
 		public Neuron CreateNeuron(); // insert an empty Neuron into database table, then return the instanciated Neuron
 		public TID CreateLinkInNeuron(TID neuronId); // insert an empty Link into database table, then return the ID of created Link to let NeuronDomainService manage aggregate
 		public TID CreateReferenceInNeuron(TID neuronId); // insert an empty Reference into database table, then return the ID of created Reference to let NeuronDomainService manage aggregate
-		public Neuron FetchNeuron(TID neuronId); // Fetch Neuron by ID from database or cache
-		public void DeleteNeuron(TID neuronId);
+		public Neuron FetchNeuron(TID neuronId); // Fetch Neuron by Neuron ID from database or cache
+		public Neuron FetchSourceNeuronOfLink(TID LinkId);
+		public Neuron FetchSourceNeuronOfReference(TID ReferenceId);
+		public void DeleteNeuron(TID neuronId); // also delete aggregate member entities
 		public void RecoverNeuron(NeuronData neuronData); // Undo DeleteNeuron()
 		public void SaveChanges(); // only save changes to database in User's order
 	}

@@ -14,30 +14,7 @@ using NoteTaking.Domain;
 // variable name should be the same for mapping
 namespace DTOs
 {
-	#region Follow DTO Interfaces to ensure successful mapping between DTO and Domain Object
-	public interface INeuronDTO<TNoteDTO, TLinkDTO, TReferenceDTO, TNoteSegmentDTO> 
-		where TNoteDTO: INoteDTO<TNoteSegmentDTO> 
-		where TLinkDTO : ILinkDTO
-		where TReferenceDTO : IReferenceDTO
-		where TNoteSegmentDTO : INoteSegmentDTO
-	{
-
-		public TID? Id { get; set; }
-		public ENeuronClass? NeuronClass { get; set; }
-		public string? ImagePath { get; set; }
-
-		#region Aggregate Members
-		public TNoteDTO? NoteData { get; protected set; }
-		public Dictionary<TID, TLinkDTO>? OutLinkData { get; set; }
-		public Dictionary<TID, TID>? InLinkNeuronIdPairs { get; set; }
-		// dictionary of (linkId, neuronId) pairs;
-		// neuron may be multiple linked, should not be key of dictionary
-		public Dictionary<TID, TReferenceDTO>? OutReferenceData { get; set; }
-		public Dictionary<TID, TID>? InReferenceNeuronIdPairs { get; set; }
-		// dictionary of (referenceId, NeuronId) pairs;
-		// neuron may be multiple linked, should not be key of dictionary
-		#endregion
-	}
+	#region Follow DTO Interfaces to ensure successful mapping between DTO and Domain Object instance
 	public interface INodeDTO<TNoteDTO, TNoteSegmentDTO>
 		where TNoteDTO : INoteDTO<TNoteSegmentDTO>
 		where TNoteSegmentDTO : INoteSegmentDTO
@@ -55,6 +32,27 @@ namespace DTOs
 		public List<TID>? InReferenceIDs { get; set; }
 		#endregion
 	}
+
+	public interface INeuronDTO<TNoteDTO, TLinkDTO, TReferenceDTO, TNoteSegmentDTO> 
+		where TNoteDTO: INoteDTO<TNoteSegmentDTO> 
+		where TLinkDTO : ILinkDTO
+		where TReferenceDTO : IReferenceDTO
+		where TNoteSegmentDTO : INoteSegmentDTO
+	{
+
+		public TID? Id { get; set; }
+		public ENeuronClass? NeuronClass { get; set; }
+		public string? ImagePath { get; set; }
+
+		#region Aggregate Members
+		public TNoteDTO? NoteData { get; protected set; }
+		public List<TLinkDTO>? OutLinkData { get; set; }
+		public List<TID>? InLinkIds { get; set; }
+		public List<TReferenceDTO>? OutReferenceData { get; set; }
+		public List<TID>? InReferenceIds { get; set; }
+		#endregion
+	}
+	
 
 	public interface INoteSegmentDTO
 	{
@@ -84,6 +82,8 @@ namespace DTOs
 
 	}
 	#endregion
+
+	#region Implementations
 	public class NeuronDTO: INeuronDTO<NoteDTO, LinkDTO, ReferenceDTO, NoteSegmentDTO> 
 	{
 
@@ -93,14 +93,10 @@ namespace DTOs
 
 		#region Aggregate Members
 		public NoteDTO? NoteData { get; set; }
-		public Dictionary<TID, LinkDTO>? OutLinkData { get; set; }
-		public Dictionary<TID, TID>? InLinkNeuronIdPairs { get; set; }
-		// dictionary of (linkId, neuronId) pairs;
-		// neuron may be multiple linked, should not be key of dictionary
-		public Dictionary<TID, ReferenceDTO>? OutReferenceData { get; set; }
-		public Dictionary<TID, TID>? InReferenceNeuronIdPairs { get; set; }
-		// dictionary of (referenceId, NeuronId) pairs;
-		// neuron may be multiple linked, should not be key of dictionary
+		public List<LinkDTO>? OutLinkData { get; set; }
+		public List<TID>? InLinkIds { get; set; }
+		public List<ReferenceDTO>? OutReferenceData { get; set; }
+		public List<TID>? InReferenceIds { get; set; }
 		#endregion
 	}
 	public class NodeDTO : INodeDTO<NoteDTO, NoteSegmentDTO>
@@ -145,7 +141,7 @@ namespace DTOs
 		public EDereferencerType? DereferencerType { get; set; }
 
 	}
-
+	#endregion
 }
 
 
