@@ -186,7 +186,7 @@ namespace NoteTaking.Application
 			_neuronDS = neuronDS;
 			OldNoteData = _neuronDS.ReadNoteOfNeuron(neuronId);
 			NewNoteData = noteData;
-			OldReferenceDataPairs = _neuronDS.ReadNeuron(neuronId).OutReferenceData;
+			OldReferenceDataPairs = _neuronDS.ReadNeuron(neuronId).OutReferenceDatas;
 			NewReferenceDataPairs = newReferenceDataPairs;
 		}
 		public void Execute()

@@ -46,9 +46,9 @@ namespace DTOs
 
 		#region Aggregate Members
 		public TNoteDTO? NoteData { get; protected set; }
-		public List<TLinkDTO>? OutLinkData { get; set; }
+		public List<TLinkDTO>? OutLinkDatas { get; set; }
 		public List<TID>? InLinkIds { get; set; }
-		public List<TReferenceDTO>? OutReferenceData { get; set; }
+		public List<TReferenceDTO>? OutReferenceDatas { get; set; }
 		public List<TID>? InReferenceIds { get; set; }
 		#endregion
 	}
@@ -93,9 +93,9 @@ namespace DTOs
 
 		#region Aggregate Members
 		public NoteDTO? NoteData { get; set; }
-		public List<LinkDTO>? OutLinkData { get; set; }
+		public List<LinkDTO>? OutLinkDatas { get; set; }
 		public List<TID>? InLinkIds { get; set; }
-		public List<ReferenceDTO>? OutReferenceData { get; set; }
+		public List<ReferenceDTO>? OutReferenceDatas { get; set; }
 		public List<TID>? InReferenceIds { get; set; }
 		#endregion
 	}

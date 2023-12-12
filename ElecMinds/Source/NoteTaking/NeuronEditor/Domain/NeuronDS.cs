@@ -21,13 +21,17 @@ namespace NoteTaking.Domain
 	{
 		public void ConnectStudioDB(string studioDBPath); // connect database of the specified Studio
 		public Neuron CreateNeuron(); // insert an empty Neuron into database table, then return the instanciated Neuron
-		public TID CreateLinkInNeuron(TID neuronId); // insert an empty Link into database table, then return the ID of created Link to let NeuronDomainService manage aggregate
-		public TID CreateReferenceInNeuron(TID neuronId); // insert an empty Reference into database table, then return the ID of created Reference to let NeuronDomainService manage aggregate
+		public LinkData CreateLinkInNeuron(TID neuronId); // insert an empty Link into database table, then return created Link to let NeuronDomainService manage aggregate
+		public ReferenceData CreateReferenceInNeuron(TID neuronId); // insert an empty Reference into database table, then return created Reference to let NeuronDomainService manage aggregate
 		public Neuron FetchNeuron(TID neuronId); // Fetch Neuron by Neuron ID from database or cache
-		public Neuron FetchSourceNeuronOfLink(TID LinkId);
-		public Neuron FetchSourceNeuronOfReference(TID ReferenceId);
+		public Neuron FetchSourceNeuronOfLink(TID linkId);
+		public Neuron FetchSourceNeuronOfReference(TID referenceId);
 		public void DeleteNeuron(TID neuronId); // also delete aggregate member entities
-		public void RecoverNeuron(NeuronData neuronData); // Undo DeleteNeuron()
+		public Neuron RecoverNeuron(TID neuronId); // Undo DeleteNeuron()
+		public void DeleteLink(TID linkId);
+		public void RecoverLink(TID linkId);
+		public void DeleteReference(TID referenceId);
+		public void RecoverReference(TID referenceId);
 		public void SaveChanges(); // only save changes to database in User's order
 	}
 
@@ -50,9 +54,9 @@ namespace NoteTaking.Domain
 		{
 			_neuronRepo.DeleteNeuron(neuronId);
 		}
-		public void RecoverNeuron(NeuronData neuronData)
+		public void RecoverNeuron(TID neuronId)
 		{
-			_neuronRepo.RecoverNeuron(neuronData);
+			_neuronRepo.RecoverNeuron(neuronId);
 		}
 		public NeuronData ReadNeuron(TID neuronId)
 		{
@@ -77,9 +81,9 @@ namespace NoteTaking.Domain
 			neuron.WriteNote(noteData);
 			
 			// update neuron's outgoing references
-			Dictionary<TID, ReferenceData> oldOutReferenceData = neuron.OutReferenceData;
+			Dictionary<TID, ReferenceData> oldOutReferenceData = neuron.OutReferenceDatas;
 			Dictionary<TID, TID> removedOutReferenceNeuronIds = new Dictionary<TID, TID>();
-			foreach(var oldReferenceId in neuron.OutReferenceData.Keys) // remvoe all old references
+			foreach(var oldReferenceId in neuron.OutReferenceDatas.Keys) // remvoe all old references
 			{
 				if (!newReferenceDataPairs.ContainsKey(oldReferenceId))
 				{

@@ -2,3 +2,9 @@
 
 call Neuron Aggregate as Neuron
 add TID generic
+
+
+# Approach
+Links and References are dictionary, so they cannot fit database well, 
+they still need backing properties to interact with database, 
+that is LinkData and ReferenceData.

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DTOs;
 #region Dependency
 
 using Config;
 using Enums;
+using DTOs;
 using Config;
 using System.ComponentModel.DataAnnotations.Schema;
+using PKG;
 #endregion
 
 namespace NoteTaking.Domain
@@ -26,34 +27,36 @@ namespace NoteTaking.Domain
 		public virtual NoteData? NoteData { get; set; }
 
 		// virtual for be overrided to fetch data from fresh instances
-		public virtual List<LinkData>? OutLinkData { get; set; }
-		public virtual List<TID>? OutLinkIds
+		protected List<LinkData> _OutLinkDatas;
+		protected List<ReferenceData> _OutReferenceDatas;
+		public virtual List<LinkData>? OutLinkDatas { get; set; }
+		public virtual List<TID>? OutLinkIds // for what? foreign key cannot config
 		{
 			get
 			{
-				if (OutLinkData == null)
+				if (OutLinkDatas == null)
 				{
 					return null;
 				}
 				else
 				{
-					return OutLinkData.Select(link => (TID)link.Id).ToList();
+					return OutLinkDatas.Select(link => (TID)link.Id).ToList();
 				}
 			}
 		}
 		public List<TID>? InLinkIds { get; set; } 
-		public virtual List<ReferenceData>? OutReferenceData { get; set; }
+		public virtual List<ReferenceData>? OutReferenceDatas { get; set; }
 		public List<TID>? OutReferenceIds
 		{
 			get
 			{
-				if (OutReferenceData == null)
+				if (OutReferenceDatas == null)
 				{
 					return null;
 				}
 				else
 				{
-					return OutReferenceData.Select(reference => (TID)reference.Id).ToList();	
+					return OutReferenceDatas.Select(reference => (TID)reference.Id).ToList();	
 				}
 			}
 		}
@@ -91,9 +94,9 @@ namespace NoteTaking.Domain
 			ImagePath = neuronData.ImagePath;
 
 			NoteData = neuronData.NoteData;
-			OutLinkData = neuronData.OutLinkData;
+			OutLinkDatas = neuronData.OutLinkDatas;
 			InLinkIds = neuronData.InLinkIds;
-			OutReferenceData = neuronData.OutReferenceData;
+			OutReferenceDatas = neuronData.OutReferenceDatas;
 			InReferenceIds = neuronData.InReferenceIds;
 		}
 		public NeuronData Read()
@@ -108,16 +111,16 @@ namespace NoteTaking.Domain
 			neuronData.NeuronClass = NeuronClass;
 			neuronData.ImagePath = ImagePath;
 			neuronData.NoteData = NoteData?.DeepCopy();
-			if (OutLinkData ==  null)
+			if (OutLinkDatas ==  null)
 			{
-				neuronData.OutLinkData = null;
+				neuronData.OutLinkDatas = null;
 			}
 			else
 			{
-				neuronData.OutLinkData = new List<LinkData>();
-				foreach (var outLinkData in OutLinkData)
+				neuronData.OutLinkDatas = new List<LinkData>();
+				foreach (var outLinkData in OutLinkDatas)
 				{
-					neuronData.OutLinkData.Add(outLinkData.DeepCopy());
+					neuronData.OutLinkDatas.Add(outLinkData.DeepCopy());
 				}
 			}
 			if (InLinkIds == null)
@@ -128,16 +131,16 @@ namespace NoteTaking.Domain
 			{
 				neuronData.InLinkIds = new List<TID>(InLinkIds);
 			}
-			if (OutReferenceData == null)
+			if (OutReferenceDatas == null)
 			{
-				neuronData.OutReferenceData = null;
+				neuronData.OutReferenceDatas = null;
 			}
 			else
 			{
-				neuronData.OutReferenceData = new List<ReferenceData>();
-				foreach (var outReferenceData in OutReferenceData)
+				neuronData.OutReferenceDatas = new List<ReferenceData>();
+				foreach (var outReferenceData in OutReferenceDatas)
 				{
-					neuronData.OutReferenceData.Add(outReferenceData.DeepCopy());
+					neuronData.OutReferenceDatas.Add(outReferenceData.DeepCopy());
 				}
 			}
 			if (InReferenceIds == null)
@@ -159,9 +162,9 @@ namespace NoteTaking.Domain
 			nodeData.ImagePath = ImagePath;
 			nodeData.NoteData = NoteData?.DeepCopy();
 			nodeData.OutLinkIDs = new List<TID>();
-			if (OutLinkData != null)
+			if (OutLinkDatas != null)
 			{
-				foreach (var outLinkData in OutLinkData) { nodeData.OutLinkIDs.Add((TID)outLinkData.Id); }
+				foreach (var outLinkData in OutLinkDatas) { nodeData.OutLinkIDs.Add((TID)outLinkData.Id); }
 				
 			}
 			nodeData.InLinkIDs = new List<TID>();
@@ -170,9 +173,9 @@ namespace NoteTaking.Domain
 				nodeData.InLinkIDs = InLinkIds;
 			}
 			nodeData.OutReferenceIDs = new List<TID>();
-			if (OutReferenceData != null)
+			if (OutReferenceDatas != null)
 			{
-				foreach(var outReferenceData in OutReferenceData) { nodeData.OutReferenceIDs.Add((TID)outReferenceData.Id); }
+				foreach(var outReferenceData in OutReferenceDatas) { nodeData.OutReferenceIDs.Add((TID)outReferenceData.Id); }
 			}
 			nodeData.InReferenceIDs = new List<TID>();
 			if (InReferenceIds != null)
@@ -247,45 +250,82 @@ namespace NoteTaking.Domain
 		protected Dictionary<TID, Reference>? OutReferences { set; get; }
 		#endregion
 
-		#region Override getter of LinkData & ReferenceData
+		#region Override accessors of LinkData & ReferenceData
+		/*
+		 *  Getter will be called automatically when property methods(e.g. Add(...)) are invoked, but Setter not.
+		 */
 		public bool IsLoadingDB = false;
 		public override NoteData? NoteData
 		{
 			set
 			{
-				if (IsLoadingDB) Note = new Note(NoteData);
+				if (IsLoadingDB || NoteData == null) Note = new Note(NoteData);
 			}
 			get
 			{
-				return Note;
+				NoteData.Write(Note);
+				return NoteData;
 			}
-		} 
-		public override List<LinkData>? OutLinkData
+		}
+		protected List<LinkData>? _outLinkDatas;
+		public override List<LinkData>? OutLinkDatas
 		{
 			set
 			{
-				if (IsLoadingDB) OutLinks = value.ToDictionary(linkData => (TID)linkData.Id, linkData => new Link(linkData));
-			}
-			get
-			{
-				return OutLinks.Values.Select(link => (LinkData)link).ToList();
-			}
-		}
-		
-		public override List<ReferenceData>? OutReferenceData
-		{
-			set
-			{
-				if (IsLoadingDB) OutReferences = value.ToDictionary(referenceData => (TID)referenceData.Id, referenceData => new Reference(referenceData));	
-			}
-			get
-			{
-				return OutReferences.Values.Select(reference => (ReferenceData)reference).ToList();	
-			}
-		}
-		
-		#endregion 
+				if ((IsLoadingDB || _outLinkDatas == null) && value != null)
+				{
+					_outLinkDatas = value;
+					OutLinks = _outLinkDatas.ToDictionary(linkData => (TID)linkData.Id, linkData => new Link(linkData));
 
+				}
+			}
+			get 
+			{
+				ListPKG.UpdateEntityList<LinkData, Link>(_outLinkDatas, OutLinks.Values.ToList(),
+					(linkData, link) => linkData.Id == link.Id,
+					(linkData, link) => linkData.Write(link.Read()),
+					(link) => new LinkData(link.Read()));
+				return _outLinkDatas;
+
+			}
+		}
+		public void AddDeletedLinkBack(LinkData linkData)
+		{
+			if (_outLinkDatas == null) return;
+			_outLinkDatas.Add(linkData);
+			OutLinks[(TID)linkData.Id] = new Link(linkData);
+		}
+		protected List<ReferenceData>? _outReferenceDatas;
+		public override List<ReferenceData>? OutReferenceDatas
+		{
+			set
+			{
+				if ((IsLoadingDB || OutReferenceDatas == null) && value != null)
+				{
+					_outReferenceDatas = value;
+					OutReferences = _outReferenceDatas.ToDictionary(referenceData => (TID)referenceData.Id, referenceData => new Reference(referenceData));
+				}
+			}
+			get
+			{
+				ListPKG.UpdateEntityList<ReferenceData, Reference>(_outReferenceDatas, OutReferences.Values.ToList(),
+					(referenceData, reference) => referenceData.Id == reference.Id,
+					(referenceData, reference) => referenceData.Write(reference.Read()),
+					(reference) => new ReferenceData(reference.Read()));
+				return _outReferenceDatas;
+			}
+		}
+		public void AddOutReferenceDatas(ReferenceData referenceData)
+		{
+			if (_outReferenceDatas == null) return;
+			_outReferenceDatas.Add(referenceData);
+			OutReferences[(TID)referenceData.Id] = new Reference(referenceData);
+		}
+		#endregion
+		public Neuron() : base()
+		{
+			EnsurePropertyNotNull();
+		}
 		public Neuron(NeuronData neuronData) : base(neuronData)
 		{
 			EnsurePropertyNotNull();
@@ -311,38 +351,9 @@ namespace NoteTaking.Domain
 		}
 		public void InstantiateAggregateMembers()
 		{
-			if (Note == null)
-			{
-				Note = new Note(NoteData);
-				Note.EnsurePropertyNotNull();
-			}
-			if (OutLinks == null)
-			{
-				OutLinks = new Dictionary<TID, Link>();
-				foreach (var outLinkData in OutLinkData)
-				{
-					OutLinks[(TID)outLinkData.Id] = new Link(outLinkData);
-					OutLinks[outLinkData.Key].EnsurePropertyNotNull();
-				}
-			}
-			if (OutReferences == null)
-			{
-				OutReferences = new Dictionary<TID, Reference>();
-				foreach (var outReferenceData in OutReferenceData)
-				{
-					OutReferences[(TID)outReferenceData.Id] = new Reference(outReferenceData);
-					OutReferences[outReferenceData.Key].EnsurePropertyNotNull();
-				}
-			}
+			
 		}
-		protected void InitializeProperties()
-		{
-			InLinkNeuronIdPairs = new Dictionary<TID, TID>();
-			foreach (var id in InLinkIds)
-			{
-				InLinkNeuronIdPairs[(TID)id] = ;
-			}
-		}
+		
 		#region Note 
 		public void ExpireNoteDereference(TID referenceId)
 		{
@@ -364,7 +375,6 @@ namespace NoteTaking.Domain
 		public void WriteLink(TID linkId, LinkData linkData)
 		{
 			OutLinks[linkId].Write(linkData);
-			OutLinkData[linkId] = OutLinks[linkId].Read(); // get updated Link Data by .Read() due to partial write mechanism
 		}
 		public LinkData ReadLink(TID linkId)
 		{
@@ -374,12 +384,10 @@ namespace NoteTaking.Domain
 		{
 			Link link = new Link(linkData);
 			OutLinks[linkId] = link;
-			OutLinkData[linkId] = linkData;
 		}
 		public void RemoveLink(TID linkId)
 		{
 			OutLinks.Remove(linkId);
-			OutLinkData.Remove(linkId);
 		}
 
 		#endregion
@@ -388,7 +396,6 @@ namespace NoteTaking.Domain
 		public void WriteReference(TID referenceId, ReferenceData referenceData)
 		{
 			OutReferences[referenceId].Write(referenceData);
-			OutReferenceData[referenceId] = OutReferences[referenceId].Read(); // get updated Reference Data by .Read() due to partial write mechanism
 		}
 		public ReferenceData ReadReference(TID referenceId)
 		{
@@ -398,143 +405,10 @@ namespace NoteTaking.Domain
 		{
 			Reference reference = new Reference(referenceData);
 			OutReferences[referenceId] = reference;
-			OutReferenceData[referenceId] = referenceData;
 		}
 		public void RemoveReference(TID referenceId)
 		{
 			OutReferences.Remove(referenceId);
-			OutReferenceData.Remove(referenceId);
-		}
-
-		#endregion
-		#endregion
-	}
-	public class Neuron0 : NeuronData, INeuronAggregate
-	{
-
-		#region Neuron Aggregate
-		#region Holding References
-		protected Note? Note { get; set; }
-		protected Dictionary<TID, Link>? OutLinks { set; get; }
-		protected Dictionary<TID, Reference>? OutReferences { set; get; }
-
-		#endregion
-
-
-		public Neuron(NeuronData neuronData) : base(neuronData)
-		{
-			EnsurePropertyNotNull();
-
-		}
-		public virtual void EnsurePropertyNotNull()
-		{
-			if (Id == null)
-			{
-				Id = default(TID);
-			}
-			if (NeuronClass == null)
-			{
-				NeuronClass = default(ENeuronClass);
-			}
-			if (ImagePath == null)
-			{
-				ImagePath = "";
-			}
-			// ... others later, there should not be error if repository work well
-			InstantiateAggregateMembers();
-
-		}
-		public void InstantiateAggregateMembers()
-		{
-			if (Note == null)
-			{
-				Note = new Note(NoteData);
-				Note.EnsurePropertyNotNull();
-			}
-			if (OutLinks == null)
-			{
-				OutLinks = new Dictionary<TID, Link>();
-				foreach (var kvp in OutLinkData)
-				{
-					OutLinks[kvp.Key] = new Link(kvp.Value);
-					OutLinks[kvp.Key].EnsurePropertyNotNull();
-				}
-			}
-			if (OutReferences == null)
-			{
-				OutReferences = new Dictionary<TID, Reference>();
-				foreach (var kvp in OutReferenceData)
-				{
-					OutReferences[kvp.Key] = new Reference(kvp.Value);
-					OutReferences[kvp.Key].EnsurePropertyNotNull();
-				}
-			}
-
-
-
-		}
-
-		#region Note 
-		public void ExpireNoteDereference(TID referenceId)
-		{
-			Note.ExpireDereference(referenceId);
-		}
-
-		public void WriteNote(NoteData data)
-		{
-			NoteData = data;
-			Note.Write(data);
-		}
-		public NoteData ReadNote()
-		{
-			return Note.Read();
-		}
-		#endregion
-
-		#region Link
-		public void WriteLink(TID linkId, LinkData linkData)
-		{
-			OutLinks[linkId].Write(linkData);
-			OutLinkData[linkId] = OutLinks[linkId].Read(); // get updated Link Data by .Read() due to partial write mechanism
-		}
-		public LinkData ReadLink(TID linkId)
-		{
-			return OutLinks[linkId].Read();
-		}
-		public void AddLink(TID linkId, LinkData linkData)
-		{
-			Link link = new Link(linkData);
-			OutLinks[linkId] = link;
-			OutLinkData[linkId] = linkData;
-		}
-		public void RemoveLink(TID linkId)
-		{
-			OutLinks.Remove(linkId);
-			OutLinkData.Remove(linkId);
-		}
-
-		#endregion
-
-		#region Reference
-		public void WriteReference(TID referenceId, ReferenceData referenceData)
-		{
-			OutReferences[referenceId].Write(referenceData);
-			OutReferenceData[referenceId] = OutReferences[referenceId].Read(); // get updated Reference Data by .Read() due to partial write mechanism
-		}
-		public ReferenceData ReadReference(TID referenceId)
-		{
-			return OutReferences[referenceId].Read();
-		}
-		public void AddReference(TID referenceId, ReferenceData referenceData)
-		{
-			Reference reference = new Reference(referenceData);
-			OutReferences[referenceId] = reference;
-			OutReferenceData[referenceId] = referenceData;
-		}
-		public void RemoveReference(TID referenceId)
-		{
-			OutReferences.Remove(referenceId);
-			OutReferenceData.Remove(referenceId);
 		}
 
 		#endregion
