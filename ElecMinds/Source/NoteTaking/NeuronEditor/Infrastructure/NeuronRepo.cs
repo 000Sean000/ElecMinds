@@ -104,20 +104,34 @@ namespace NoteTaking.Infrastructure
 			_context.Neurons.Add(neuron);
 			return neuron;
 		}
+		public LinkData CreateLink()
+		{
+			TID linkId = _idPool.AcquireLinkId();
+			LinkData linkData = new LinkData() { Id = linkId };
+			_context.LinkDatas.Add(linkData);
+			return linkData;
+		}
 		public LinkData CreateLinkInNeuron(TID neuronId)
 		{
 			Neuron neuron = FetchNeuron(neuronId);
 			TID linkId = _idPool.AcquireLinkId();
 			LinkData linkData = new LinkData() { Id = linkId, SourceNeuronId = neuronId};
-
+			_context.LinkDatas.Add(linkData);
 			return linkData;
+		}
+		public ReferenceData CreateReference()
+		{
+			TID referenceId = _idPool.AcquireReferenceId() ;
+			ReferenceData referenceData = new ReferenceData() { Id = referenceId };
+			_context.ReferenceDatas.Add(referenceData);
+			return referenceData;
 		}
 		public ReferenceData CreateReferenceInNeuron(TID neuronId)
 		{
-			Neuron neuron = FetchNeuron(neuronId) ;
-			TID referenceId = _idPool.AcquireReferenceId() ;
+			Neuron neuron = FetchNeuron(neuronId);
+			TID referenceId = _idPool.AcquireReferenceId();
 			ReferenceData referenceData = new ReferenceData() { Id = referenceId, SourceNeuronId = neuronId };
-			
+			_context.ReferenceDatas.Add(referenceData);
 			return referenceData;
 		}
 		public Neuron FetchNeuron(TID neuronId)

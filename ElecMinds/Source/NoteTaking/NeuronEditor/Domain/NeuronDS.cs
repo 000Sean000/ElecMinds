@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Config;
 using Enums;
+using PKG;
 #endregion
 
 namespace NoteTaking.Domain
@@ -21,8 +22,10 @@ namespace NoteTaking.Domain
 	{
 		public void ConnectStudioDB(string studioDBPath); // connect database of the specified Studio
 		public Neuron CreateNeuron(); // insert an empty Neuron into database table, then return the instanciated Neuron
-		public LinkData CreateLinkInNeuron(TID neuronId); // insert an empty Link into database table, then return created Link to let NeuronDomainService manage aggregate
-		public ReferenceData CreateReferenceInNeuron(TID neuronId); // insert an empty Reference into database table, then return created Reference to let NeuronDomainService manage aggregate
+		public LinkData CreateLink();
+		//public LinkData CreateLinkInNeuron(TID neuronId); // insert an empty Link into database table, then return created Link to let NeuronDomainService manage aggregate
+		public ReferenceData CreateReference();
+		//public ReferenceData CreateReferenceInNeuron(TID neuronId); // insert an empty Reference into database table, then return created Reference to let NeuronDomainService manage aggregate
 		public Neuron FetchNeuron(TID neuronId); // Fetch Neuron by Neuron ID from database or cache
 		public Neuron FetchSourceNeuronOfLink(TID linkId);
 		public Neuron FetchSourceNeuronOfReference(TID referenceId);
@@ -45,10 +48,10 @@ namespace NoteTaking.Domain
 			_neuronRepo = serviceProvider.GetRequiredService<INeuronRepository>();
 		}
 		#region Neuron
-		public NeuronData CreateNewNeuron()
+		public TID CreateNewNeuron()
 		{
 			Neuron neuron = _neuronRepo.CreateNeuron();
-			return neuron.Read();
+			return (TID)neuron.Id;
 		}
 		public void DeleteNeuron(TID neuronId)
 		{
@@ -71,8 +74,10 @@ namespace NoteTaking.Domain
 		#endregion
 
 		#region Note
-		public void WriteNoteOfNeuron(TID neuronId, NoteData noteData, Dictionary<TID, ReferenceData> newReferenceDataPairs) 
+		public void WriteNoteOfNeuron(TID neuronId, NoteData noteData, List<ReferenceData>? newReferenceDatas = null) 
 		{
+			if (newReferenceDatas == null) newReferenceDatas = new List<ReferenceData> (); // empty list, no reference.
+
 			//// check whether reference recurses-> do this job in application service
 			// suppose that references do not cause reursion
 			Neuron neuron = _neuronRepo.FetchNeuron(neuronId);
@@ -81,39 +86,44 @@ namespace NoteTaking.Domain
 			neuron.WriteNote(noteData);
 			
 			// update neuron's outgoing references
-			Dictionary<TID, ReferenceData> oldOutReferenceData = neuron.OutReferenceDatas;
-			Dictionary<TID, TID> removedOutReferenceNeuronIds = new Dictionary<TID, TID>();
-			foreach(var oldReferenceId in neuron.OutReferenceDatas.Keys) // remvoe all old references
+			List<ReferenceData> oldOutReferenceDatas = neuron.OutReferenceDatas;
+			Dictionary<TID, TID> removedOutReferenceNeuronIdPairs = new Dictionary<TID, TID>();
+			foreach(ReferenceData oldReferenceData in oldOutReferenceDatas) // remvoe all old(stale) references whatever
 			{
-				if (!newReferenceDataPairs.ContainsKey(oldReferenceId))
+				TID oldReferenceId = (TID)oldReferenceData.Id;
+				if (newReferenceDatas.FirstOrDefault(newReferenceData => newReferenceData.Id == oldReferenceId) == null)
 				{
-					removedOutReferenceNeuronIds[oldReferenceId] = (TID)oldOutReferenceData[oldReferenceId].TargetNeuronId;
+					removedOutReferenceNeuronIdPairs[oldReferenceId] = (TID)oldReferenceData.TargetNeuronId; // record those who won't show up in new reference list
 				}
 				neuron.RemoveReference(oldReferenceId);
 			}
-			foreach(var kvp in newReferenceDataPairs) // add new reference
+			foreach(ReferenceData newReferenceData in newReferenceDatas) // add new reference
 			{
-				neuron.AddReference(kvp.Key, kvp.Value);				
+				neuron.AddReference((TID)newReferenceData.Id, newReferenceData);				
 			}
 
-			// update outgoing reference neuron's InReferenceNeuronIdPairs
-
-			foreach (var kvp in removedOutReferenceNeuronIds) // remove old reference
+			// update outgoing reference neuron's InReferenceIds			
+			foreach (var kvp in removedOutReferenceNeuronIdPairs) // remove old incoming reference ID
 			{
-				Neuron removedNeuron = _neuronRepo.FetchNeuron(kvp.Value);
-				removedNeuron.RemoveReference(kvp.Key);
+				Neuron oldReferencedNeuron = _neuronRepo.FetchNeuron(kvp.Value);
+				oldReferencedNeuron.InReferenceIds.Remove(kvp.Key);
 			}
-			foreach (var kvp in newReferenceDataPairs) // add new reference
+			foreach (var newReferenceData in newReferenceDatas) // add new incoming reference ID
 			{
-				Neuron outNeuron = _neuronRepo.FetchNeuron((TID)kvp.Value.TargetNeuronId);
-				outNeuron.AddReference(kvp.Key, kvp.Value);
+				Neuron newReferencedNeuron = _neuronRepo.FetchNeuron((TID)newReferenceData.TargetNeuronId);
+				if (newReferencedNeuron.InReferenceIds.Contains((TID)newReferenceData.Id)) // remove old ID before add same ID
+				{
+					newReferencedNeuron.InReferenceIds.Remove((TID)newReferenceData.Id);
+				}
+				newReferencedNeuron.InReferenceIds.Add((TID)newReferenceData.Id);
+
 			}
 
 			// expire incoming reference neuron's dereference
-			foreach (var kvp in neuron.InReferenceNeuronIdPairs)
+			foreach (var inReferenceId in neuron.InReferenceIds)
 			{
-				Neuron inNeuron = _neuronRepo.FetchNeuron(kvp.Value);
-				inNeuron.ExpireNoteDereference(kvp.Key);
+				Neuron referencingNeuron = _neuronRepo.FetchSourceNeuronOfReference(inReferenceId);
+				referencingNeuron.ExpireNoteDereference(inReferenceId);
 			}
 		
 		}
@@ -226,16 +236,15 @@ namespace NoteTaking.Domain
 
 			// update target neuron's incoming links
 			Neuron targetNeuron = _neuronRepo.FetchNeuron((TID)linkData.TargetNeuronId);
-			targetNeuron.InLinkNeuronIdPairs[(TID)linkId] = neuronId;
+			targetNeuron.InLinkIds.Add(linkId);
 		}
 		public void RemoveLinkFromNeuron(TID neuronId, TID linkId)
 		{
 			Neuron neuron = _neuronRepo.FetchNeuron(neuronId);
 
 			// update target neuron's incoming links
-			TID targetNeuronId = neuron.InLinkNeuronIdPairs[linkId];
-			Neuron targetNeuron = _neuronRepo.FetchNeuron(targetNeuronId);
-			targetNeuron.InLinkNeuronIdPairs.Remove(linkId);
+			Neuron targetNeuron = _neuronRepo.FetchSourceNeuronOfLink(linkId);
+			targetNeuron.InLinkIds.Remove(linkId);
 
 			neuron.RemoveLink(linkId);
 		}

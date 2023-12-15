@@ -42,7 +42,7 @@ namespace NoteTaking.Application
 		{
 			CreateNewNeuron cmd = new CreateNewNeuron(_neuronDS);
 			_interactionAPI.Execute(cmd);
-			return (TID)cmd.NeuronData.Id;
+			return (TID)cmd.NeuronId;
 		}
 		public void DeleteNeuron(TID neuronId)
 		{
@@ -66,9 +66,9 @@ namespace NoteTaking.Application
 		{
 			return _neuronDS.ReadNoteOfNeuron(neuronId);
 		}
-		public void WriteNoteOfNeuron(TID neuronId, NoteData noteData, Dictionary<TID, ReferenceData> newReferenceDataPairs)
+		public void WriteNoteOfNeuron(TID neuronId, NoteData noteData, List<ReferenceData> newReferenceDatas)
 		{
-			WriteNoteOfNeuron cmd = new WriteNoteOfNeuron(_neuronDS, neuronId, noteData, newReferenceDataPairs);
+			WriteNoteOfNeuron cmd = new WriteNoteOfNeuron(_neuronDS, neuronId, noteData, newReferenceDatas);
 			_interactionAPI.Execute(cmd);
 
 		}
@@ -110,43 +110,36 @@ namespace NoteTaking.Application
 	public class CreateNewNeuron : ICommandWithUndo
 	{
 		protected NeuronDomainService _neuronDS;
-		public NeuronData? NeuronData { get; set; } 
+		public TID NeuronId { get; set; } 
 		public CreateNewNeuron(NeuronDomainService neuronDS)
 		{
 			_neuronDS = neuronDS;
 		}
 		public void Execute()
 		{
-			if (NeuronData == null)
-			{
-				NeuronData = _neuronDS.CreateNewNeuron();
-			}
-			else
-			{
-				_neuronDS.RecoverNeuron(NeuronData);
-			}
+			NeuronId = _neuronDS.CreateNewNeuron();
 		}
 		public void Undo()
 		{
-			_neuronDS.DeleteNeuron((TID)NeuronData.Id);
+			_neuronDS.DeleteNeuron(NeuronId);
 		}
 	}
 	public class DeleteNeuron : ICommandWithUndo
 	{
 		protected NeuronDomainService _neuronDS;
-		public NeuronData NeuronData { get; set; }
+		public TID NeuronId { get; set; }
 		public DeleteNeuron(NeuronDomainService neuronDS, TID neuronId)
 		{
 			_neuronDS = neuronDS;
-			NeuronData = _neuronDS.ReadNeuron(neuronId);
+			NeuronId = neuronId;
 		}
 		public void Execute()
 		{
-			_neuronDS.DeleteNeuron((TID)NeuronData.Id);
+			_neuronDS.DeleteNeuron((TID)NeuronId);
 		}
 		public void Undo()
 		{
-			_neuronDS.RecoverNeuron(NeuronData);
+			_neuronDS.RecoverNeuron(NeuronId);
 		}
 	}
 	public class WriteNeuron : ICommandWithUndo
@@ -178,24 +171,25 @@ namespace NoteTaking.Application
 		public TID NeuronId { get; set; }
 		public NoteData OldNoteData { get; set; }
 		public NoteData NewNoteData { get; set; }
-		Dictionary<TID, ReferenceData> OldReferenceDataPairs { get; set; }
-		Dictionary<TID, ReferenceData> NewReferenceDataPairs { get; set; }
+		List<ReferenceData> OldReferenceDatas { get; set; }
+		List<ReferenceData> NewReferenceDatas { get; set; }
 
-		public WriteNoteOfNeuron(NeuronDomainService neuronDS, TID neuronId, NoteData noteData, Dictionary<TID, ReferenceData> newReferenceDataPairs)
+		public WriteNoteOfNeuron(NeuronDomainService neuronDS, TID neuronId, NoteData newNoteData, List<ReferenceData> newReferenceDatas)
 		{
 			_neuronDS = neuronDS;
-			OldNoteData = _neuronDS.ReadNoteOfNeuron(neuronId);
-			NewNoteData = noteData;
-			OldReferenceDataPairs = _neuronDS.ReadNeuron(neuronId).OutReferenceDatas;
-			NewReferenceDataPairs = newReferenceDataPairs;
+			NeuronData neuronData = _neuronDS.ReadNeuron(neuronId);
+			OldNoteData = neuronData.NoteData;
+			NewNoteData = newNoteData;
+			OldReferenceDatas = neuronData.OutReferenceDatas;
+			NewReferenceDatas = newReferenceDatas;
 		}
 		public void Execute()
 		{
-			_neuronDS.WriteNoteOfNeuron(NeuronId, NewNoteData, NewReferenceDataPairs);
+			_neuronDS.WriteNoteOfNeuron(NeuronId, NewNoteData, NewReferenceDatas);
 		}
 		public void Undo()
 		{
-			_neuronDS.WriteNoteOfNeuron(NeuronId, OldNoteData, OldReferenceDataPairs);
+			_neuronDS.WriteNoteOfNeuron(NeuronId, OldNoteData, OldReferenceDatas);
 		}
 	}
 	public class WriteLinkOfNeuron : ICommandWithUndo

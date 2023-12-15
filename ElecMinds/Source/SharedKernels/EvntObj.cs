@@ -37,7 +37,7 @@ namespace EvntObj // [Event Bus] Event Objects
 	}
 	public class NoteWritten : NoteRead 
 	{
-		public Dictionary<TID, ReferenceDTO> NewReferenceDTOPairs {  get; set; }
+		public List<ReferenceDTO> NewReferenceDTOs {  get; set; }
 	}
 
 	public class ReferenceRecurses

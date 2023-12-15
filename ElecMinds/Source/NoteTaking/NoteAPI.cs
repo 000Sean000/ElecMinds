@@ -42,7 +42,7 @@ namespace NoteTaking.API
 		public NeuronDTO ReadNeuron(TID neuronId);
 		public void WriteNeuron(TID neuronId, NeuronDTO neuronDTO);
 		public NoteDTO ReadNoteOfNeuron(TID neuronId);
-		public void WriteNoteOfNeuron(TID neuronId, NoteDTO noteDTO, Dictionary<TID, ReferenceDTO> newReferenceDTOPairs);
+		public void WriteNoteOfNeuron(TID neuronId, NoteDTO noteDTO, List<ReferenceDTO> newReferenceDTOs);
 		public bool DoesReferencenRecurseInNeuron(TID neuronId, TID referenceNeuronId);
 		public LinkDTO ReadLinkOfNeuron(TID neuronId, TID linkId);
 		public void WriteLinkOfNeuron(TID neuronId, TID linkId, LinkDTO linkDTO);
@@ -117,12 +117,12 @@ namespace NoteTaking.API
 			_interactionAPI.EBusPublish<NoteRead>(noteRead);
 			return noteDTO;
 		}
-		public void WriteNoteOfNeuron(TID neuronId, NoteDTO noteDTO, Dictionary<TID, ReferenceDTO> newReferenceDTOPairs)
+		public void WriteNoteOfNeuron(TID neuronId, NoteDTO noteDTO, List<ReferenceDTO> newReferenceDTOs)
 		{
 			NoteData noteData = Mapper.Map<NoteData>(noteDTO);
-			Dictionary<TID, ReferenceData> newReferenceData = Mapper.Map<Dictionary<TID, ReferenceData>>(newReferenceDTOPairs);
-			_neuronAS.WriteNoteOfNeuron(neuronId, noteData, newReferenceData);
-			NoteWritten noteWritten = new NoteWritten() { NeuronId = neuronId, NoteDTO = noteDTO, NewReferenceDTOPairs = newReferenceDTOPairs };
+			List<ReferenceData> newReferenceDatas = Mapper.Map<List<ReferenceData>>(newReferenceDTOs);
+			_neuronAS.WriteNoteOfNeuron(neuronId, noteData, newReferenceDatas);
+			NoteWritten noteWritten = new NoteWritten() { NeuronId = neuronId, NoteDTO = noteDTO, NewReferenceDTOs = newReferenceDTOs };
 			_interactionAPI.EBusPublish<NoteWritten>(noteWritten);
 
 		}

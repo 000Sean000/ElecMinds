@@ -211,11 +211,11 @@ namespace NoteTaking.Domain
 	public interface INeuronDomainService
 	{
 		#region Neuron
-		public NeuronData CreateNewNeuron();
+		public TID CreateNewNeuron();
 		public void DeleteNeuron(TID neuronId);
 		#endregion
 		#region Note 
-		public void WriteNoteOfNeuron(TID neuronId, NoteData noteData, Dictionary<TID, ReferenceData>? newReferenceData);
+		public void WriteNoteOfNeuron(TID neuronId, NoteData noteData, List<ReferenceData>? newReferenceData);
 		public NoteData ReadNoteOfNeuron(TID neuronId);
 		///public void ExpireNoteDereferenceOfNeuron(TID neuronId, TID referenceNeuronId);
 		public string GetNoteDereferenceOfNeuron(TID neuronId);
@@ -252,19 +252,24 @@ namespace NoteTaking.Domain
 
 		#region Override accessors of LinkData & ReferenceData
 		/*
-		 *  Getter will be called automatically when property methods(e.g. Add(...)) are invoked, but Setter not.
+		 *  Getter will be called automatically when property methods(e.g. Add(...)) are invoked, but Setter won't.
 		 */
 		public bool IsLoadingDB = false;
+		protected NoteData? _noteData;
 		public override NoteData? NoteData
 		{
 			set
 			{
-				if (IsLoadingDB || NoteData == null) Note = new Note(NoteData);
+				if ((IsLoadingDB || NoteData == null) && value != null)
+				{
+					_noteData = value;
+					Note = new Note(_noteData);
+				}
 			}
 			get
 			{
-				NoteData.Write(Note);
-				return NoteData;
+				_noteData.Write(Note);
+				return _noteData;
 			}
 		}
 		protected List<LinkData>? _outLinkDatas;
@@ -279,8 +284,9 @@ namespace NoteTaking.Domain
 
 				}
 			}
-			get 
+			get
 			{
+				// due to DB entity tracking, entities with same ID should have same reference(memory address)
 				ListPKG.UpdateEntityList<LinkData, Link>(_outLinkDatas, OutLinks.Values.ToList(),
 					(linkData, link) => linkData.Id == link.Id,
 					(linkData, link) => linkData.Write(link.Read()),
@@ -289,12 +295,7 @@ namespace NoteTaking.Domain
 
 			}
 		}
-		public void AddDeletedLinkBack(LinkData linkData)
-		{
-			if (_outLinkDatas == null) return;
-			_outLinkDatas.Add(linkData);
-			OutLinks[(TID)linkData.Id] = new Link(linkData);
-		}
+
 		protected List<ReferenceData>? _outReferenceDatas;
 		public override List<ReferenceData>? OutReferenceDatas
 		{
@@ -308,6 +309,7 @@ namespace NoteTaking.Domain
 			}
 			get
 			{
+				// due to DB entity tracking, entities with same ID should have same reference(memory address)
 				ListPKG.UpdateEntityList<ReferenceData, Reference>(_outReferenceDatas, OutReferences.Values.ToList(),
 					(referenceData, reference) => referenceData.Id == reference.Id,
 					(referenceData, reference) => referenceData.Write(reference.Read()),
@@ -315,12 +317,7 @@ namespace NoteTaking.Domain
 				return _outReferenceDatas;
 			}
 		}
-		public void AddOutReferenceDatas(ReferenceData referenceData)
-		{
-			if (_outReferenceDatas == null) return;
-			_outReferenceDatas.Add(referenceData);
-			OutReferences[(TID)referenceData.Id] = new Reference(referenceData);
-		}
+
 		#endregion
 		public Neuron() : base()
 		{
@@ -380,10 +377,17 @@ namespace NoteTaking.Domain
 		{
 			return OutLinks[linkId].Read();
 		}
+		public void AddLinkFromDB(TID linkId, LinkData linkData) // for recovering of deletion
+		{
+			if (_outLinkDatas == null) return; // initialization should be done before
+			
+			// update both DB entities and domain instances
+			_outLinkDatas.Add(linkData);
+			OutLinks[(TID)linkData.Id] = new Link(linkData);
+		}
 		public void AddLink(TID linkId, LinkData linkData)
 		{
-			Link link = new Link(linkData);
-			OutLinks[linkId] = link;
+			OutLinks[(TID)linkData.Id] = new Link(linkData);
 		}
 		public void RemoveLink(TID linkId)
 		{
@@ -401,10 +405,17 @@ namespace NoteTaking.Domain
 		{
 			return OutReferences[referenceId].Read();
 		}
+		public void AddReferenceFromDB(TID referenceId, ReferenceData referenceData) // for recovering of deletion
+		{
+			if (_outReferenceDatas == null) return;// initialization should be done before
+			
+			// update both DB entities and domain instances
+			_outReferenceDatas.Add(referenceData);
+			OutReferences[(TID)referenceData.Id] = new Reference(referenceData);
+		}
 		public void AddReference(TID referenceId, ReferenceData referenceData)
 		{
-			Reference reference = new Reference(referenceData);
-			OutReferences[referenceId] = reference;
+			OutReferences[(TID)referenceData.Id] = new Reference(referenceData);
 		}
 		public void RemoveReference(TID referenceId)
 		{
