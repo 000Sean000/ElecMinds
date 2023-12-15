@@ -15,7 +15,8 @@ using NoteTaking.Domain;
 namespace DTOs
 {
 	#region Follow DTO Interfaces to ensure successful mapping between DTO and Domain Object instance
-	public interface INodeDTO<TNoteDTO, TNoteSegmentDTO>
+	public interface INoteTakingEntity { }
+	public interface INodeDTO<TNoteDTO, TNoteSegmentDTO>:INoteTakingEntity
 		where TNoteDTO : INoteDTO<TNoteSegmentDTO>
 		where TNoteSegmentDTO : INoteSegmentDTO
 	{
@@ -33,7 +34,7 @@ namespace DTOs
 		#endregion
 	}
 
-	public interface INeuronDTO<TNoteDTO, TLinkDTO, TReferenceDTO, TNoteSegmentDTO> 
+	public interface INeuronDTO<TNoteDTO, TLinkDTO, TReferenceDTO, TNoteSegmentDTO> : INoteTakingEntity
 		where TNoteDTO: INoteDTO<TNoteSegmentDTO> 
 		where TLinkDTO : ILinkDTO
 		where TReferenceDTO : IReferenceDTO
@@ -65,7 +66,7 @@ namespace DTOs
 		public ENoteImportance? Importance { get; set; }
 		public List<TNoteSegmentDTO>? Segments { get; set; }
 	}
-	public interface ILinkDTO
+	public interface ILinkDTO : INoteTakingEntity
 	{
 		public TID? Id { get; set; }
 		public TID? SourceNeuronId { get; set; } // will be used by target neuron to check back
@@ -73,7 +74,7 @@ namespace DTOs
 		public ELinkType? LinkType { get; set; }
 		public Dictionary<ELinkInfoIndex, string>? LinkInfo { get; set; }
 	}
-	public interface IReferenceDTO
+	public interface IReferenceDTO : INoteTakingEntity
 	{
 		public TID? Id { get; set; }
 		public TID? SourceNeuronId { get; set; } // will be used by target neuron to check back

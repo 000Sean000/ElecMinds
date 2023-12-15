@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Config;
 using NoteTaking.Domain;
+using DTOs;
 
 #endregion
 
@@ -104,6 +105,7 @@ namespace NoteTaking.Infrastructure
 			_context.Neurons.Add(neuron);
 			return neuron;
 		}
+		
 		public LinkData CreateLink()
 		{
 			TID linkId = _idPool.AcquireLinkId();
@@ -134,6 +136,7 @@ namespace NoteTaking.Infrastructure
 			_context.ReferenceDatas.Add(referenceData);
 			return referenceData;
 		}
+		
 		public Neuron FetchNeuron(TID neuronId)
 		{
 			// Check if the Neuron is already being tracked
@@ -146,14 +149,6 @@ namespace NoteTaking.Infrastructure
 				neuron = _context.Neurons.FirstOrDefault(n => n.Id == neuronId);
 			}
 			return neuron;
-		}
-		protected LinkData FetchLink(TID linkId)
-		{
-			return _context.LinkDatas.Local.FirstOrDefault(l => l.Id == linkId); 
-		}
-		protected ReferenceData FetchReference(TID referenceId)
-		{
-			return _context.ReferenceDatas.Local.FirstOrDefault(r => r.Id == referenceId);
 		}
 		public Neuron FetchSourceNeuronOfLink(TID linkId)
 		{
@@ -173,54 +168,66 @@ namespace NoteTaking.Infrastructure
 			}
 			return FetchNeuron((TID)referenceData.SourceNeuronId);
 		}
+		public LinkData FetchLink(TID linkId)
+		{
+			return _context.LinkDatas.Local.FirstOrDefault(l => l.Id == linkId);
+		}
+		public ReferenceData FetchReference(TID referenceId)
+		{
+			return _context.ReferenceDatas.Local.FirstOrDefault(r => r.Id == referenceId);
+		}
 		public void DeleteNeuron(TID neuronId) 
 		{
 			Neuron neuron = FetchNeuron(neuronId);
-			_trashCan.Feed<Neuron>(neuron, _context.Neurons, _trashCan.Neurons);
+			_trashCan.Feed(neuron); 
 			// need cascading delete
 		}
 		public void DeleteLink(TID linkId)
 		{
 			LinkData link = FetchLink(linkId) ;
-			_trashCan.Feed<LinkData>(link, _context.LinkDatas, _trashCan.LinkDatas);
+			_trashCan.Feed(link);
 		}
 		public void DeleteReference(TID referenceId)
 		{
 			ReferenceData reference = FetchReference(referenceId) ;
-			_trashCan.Feed<ReferenceData>(reference, _context.ReferenceDatas, _trashCan.ReferenceDatas);
+			_trashCan.Feed(reference);
 		}
 		public Neuron RecoverNeuron(TID neuronId)
 		{
-			Neuron neuron = _trashCan.Neurons.FirstOrDefault(entity => entity.Id == neuronId);	
-			_trashCan.Recover(neuron, _context.Neurons, _trashCan.Neurons);
+			Neuron neuron = _trashCan.TrashNeurons.FirstOrDefault(entity => entity.Id == neuronId);	
+			_trashCan.Recover(neuron);
 			return neuron;
 		}
 		public void RecoverLink(TID linkId)
 		{
-			LinkData link = _trashCan.LinkDatas.FirstOrDefault(entity => entity.Id == linkId);
-			_trashCan.Recover(link, _context.LinkDatas, _trashCan.LinkDatas);
+			LinkData linkData = _trashCan.TrashLinkDatas.FirstOrDefault(entity => entity.Id == linkId);
+			_trashCan.Recover(linkData);
+			Neuron neuron = FetchSourceNeuronOfLink(linkId) ;
+			neuron.AddLink(linkId, linkData);
 		}
 		public void RecoverReference(TID referenceId)
 		{
-			ReferenceData reference = _trashCan.ReferenceDatas.FirstOrDefault(entity => entity.Id == referenceId);
-			_trashCan.Recover(reference, _context.ReferenceDatas, _trashCan.ReferenceDatas);
+			ReferenceData referenceData = _trashCan.TrashReferenceDatas.FirstOrDefault(entity => entity.Id == referenceId);
+			_trashCan.Recover(referenceData);
+			Neuron neuron = FetchSourceNeuronOfReference(referenceId);
+			neuron.AddReference(referenceId, referenceData);
 		}
 		public void ClearTrashCan()
 		{
-			foreach(var neuron in _trashCan.Neurons)
+			foreach(var neuron in _trashCan.TrashNeurons)
 			{
 				_idPool.ReleaseNeuronId((TID)neuron.Id);
-				_trashCan.Neurons.Remove(neuron);
+				_trashCan.TrashNeurons.Remove(neuron);
 			}
-			foreach(var link in _trashCan.LinkDatas)
+			foreach(var link in _trashCan.TrashLinkDatas)
 			{
 				_idPool.ReleaseLinkId((TID)link.Id);
-				_trashCan.LinkDatas.Remove(link);
+				_trashCan.TrashLinkDatas.Remove(link);
 			}
-			foreach(var reference in _trashCan.ReferenceDatas)
+			foreach(var reference in _trashCan.TrashReferenceDatas)
 			{
 				_idPool.ReleaseReferenceId((TID)reference.Id);
-				_trashCan.ReferenceDatas.Remove(reference);
+				_trashCan.TrashReferenceDatas.Remove(reference);
 			}
 		}
 		public void SaveChanges()
@@ -230,19 +237,50 @@ namespace NoteTaking.Infrastructure
 	}
 	public class TrashCan
 	{
-		public List<Neuron> Neurons { get; set; }
-		public List<LinkData> LinkDatas { get; set; }
-		public List<ReferenceData> ReferenceDatas { get; set; }
-		public void Feed<TEntity>(TEntity entity, DbSet<TEntity> entities, List<TEntity> trashCanEntities) where TEntity : class
+		protected DbSet<Neuron> _repoNeurons { get; set; }
+		protected DbSet<LinkData> _repoLinkDatas { get; set; }
+		protected DbSet<ReferenceData> _repoReferenceDatas { get; set; }
+		public List<Neuron> TrashNeurons { get; set; }
+		public List<LinkData> TrashLinkDatas { get; set; }
+		public List<ReferenceData> TrashReferenceDatas { get; set; }
+		public TrashCan(DbSet<Neuron> repoNeurons, DbSet<LinkData> repoLinkDatas, DbSet<ReferenceData> repoReferenceDatas)
 		{
-			entities.Remove(entity);
-			trashCanEntities.Add(entity);
+			_repoNeurons = repoNeurons;
+			_repoLinkDatas = repoLinkDatas;
+			_repoReferenceDatas = repoReferenceDatas;
 		}
-		public void Recover<TEntity>(TEntity entity, DbSet<TEntity> entities, List<TEntity> trashCanEntities) where TEntity : class
+		public void Feed(Neuron neuron)
 		{
-			trashCanEntities.Remove(entity);
-			entities.Add(entity);
+			_repoNeurons.Remove(neuron);
+			TrashNeurons.Add(neuron);
+
 		}
+		public void Feed(LinkData linkData)
+		{
+			_repoLinkDatas.Remove(linkData);
+			TrashLinkDatas.Add(linkData);
+		}
+		public void Feed(ReferenceData referenceData)
+		{
+			_repoReferenceDatas.Remove(referenceData);
+			TrashReferenceDatas.Add(referenceData);
+		}
+		public void Recover(Neuron neuron)
+		{
+			TrashNeurons.Remove(neuron);
+			_repoNeurons.Add(neuron);
+		}
+		public void Recover(LinkData linkData)
+		{
+			TrashLinkDatas.Remove(linkData);
+			_repoLinkDatas.Add(linkData);
+		}
+		public void Recover(ReferenceData referenceData)
+		{
+			TrashReferenceDatas.Remove(referenceData);
+			_repoReferenceDatas.Add(referenceData);
+		}
+		
 	}
 	public class IdPool
 	{

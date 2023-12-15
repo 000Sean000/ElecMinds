@@ -1,6 +1,1 @@
-﻿public void AddOutReferenceDatas(ReferenceData referenceData)
-		{
-			if (_outReferenceDatas == null) return;
-			_outReferenceDatas.Add(referenceData);
-			OutReferences[(TID)referenceData.Id] = new Reference(referenceData);
-		}
+﻿

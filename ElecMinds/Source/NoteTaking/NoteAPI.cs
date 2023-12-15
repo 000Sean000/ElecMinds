@@ -35,7 +35,7 @@ namespace NoteTaking.API
 			CreateMap<ReferenceData, ReferenceDTO>().ReverseMap();
 		}
 	}
-	public interface INeuronEditorAPI
+	public interface INeuronEditor
 	{
 		public TID CreateNewNeuron();
 		public void DeleteNeuron(TID neuronId);
@@ -52,7 +52,7 @@ namespace NoteTaking.API
 
 	}
 	
-	public class NeuronEditorAPI:INeuronEditorAPI
+	public class NeuronEditor:INeuronEditor
 	{
 		protected readonly IServiceProvider _serviceProvider;
 		protected NeuronApplicationService _neuronAS;
@@ -60,7 +60,7 @@ namespace NoteTaking.API
 
 		public IMapper Mapper { get; set; }
 
-		public NeuronEditorAPI(IServiceProvider serviceProvider)
+		public NeuronEditor(IServiceProvider serviceProvider)
 		{
 			_serviceProvider = serviceProvider;
 			_neuronAS = serviceProvider.GetService<NeuronApplicationService>();

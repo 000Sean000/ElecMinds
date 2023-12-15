@@ -1,4 +1,20 @@
-﻿re-define domain model with ICollection to fit entity framework automation
+﻿correctness is more important than performance => focus on readability & maintainability
+# To do
++ varify undo of writeNote's reference recycle in repository:
+	try to move sync of domain instances and DB entities to repository, then Domain Service will call repository's methods to ensure instance integrity
+	don't let database matters be exposed, let Neuron(rather than NeuronDS) help repository 
+	repository should handle entitiy's (include member of aggregte) fetch, creation & deletion
+	To let it be hard constrain => only repository can return correct instance type
+	=> use factory to create valid entityData from repository
+	- Requirements & Constrains
+		- aggregate root cannot expose member entity => services communicate by entityData
+		- database should handle entity tracking => sync member entities and entityDatas
+		- database only can access entityData from aggregate root
+		- 
++ shorter feed() and recover() of TrashCan, eliminate some parameters
+
+# done
+re-define domain model with ICollection to fit entity framework automation
 
 call Neuron Aggregate as Neuron
 add TID generic

@@ -385,8 +385,16 @@ namespace NoteTaking.Domain
 			_outLinkDatas.Add(linkData);
 			OutLinks[(TID)linkData.Id] = new Link(linkData);
 		}
-		public void AddLink(TID linkId, LinkData linkData)
+		public void AddLinkSimple(TID linkId, LinkData linkData)
 		{
+			OutLinks[(TID)linkData.Id] = new Link(linkData);
+		}
+		public void AddLink(TID linkId, LinkData linkData) // for recovering of deletion
+		{
+			if (_outLinkDatas == null) return; // initialization should be done before
+
+			// update both DB entities and domain instances
+			_outLinkDatas.Add(linkData);
 			OutLinks[(TID)linkData.Id] = new Link(linkData);
 		}
 		public void RemoveLink(TID linkId)
@@ -408,13 +416,21 @@ namespace NoteTaking.Domain
 		public void AddReferenceFromDB(TID referenceId, ReferenceData referenceData) // for recovering of deletion
 		{
 			if (_outReferenceDatas == null) return;// initialization should be done before
-			
+
 			// update both DB entities and domain instances
 			_outReferenceDatas.Add(referenceData);
 			OutReferences[(TID)referenceData.Id] = new Reference(referenceData);
 		}
-		public void AddReference(TID referenceId, ReferenceData referenceData)
+		public void AddReferenceSimple(TID referenceId, ReferenceData referenceData)
 		{
+			OutReferences[(TID)referenceData.Id] = new Reference(referenceData);
+		}
+		public void AddReference(TID referenceId, ReferenceData referenceData) // for recovering of deletion
+		{
+			if (_outReferenceDatas == null) return;// initialization should be done before
+
+			// update both DB entities and domain instances
+			_outReferenceDatas.Add(referenceData);
 			OutReferences[(TID)referenceData.Id] = new Reference(referenceData);
 		}
 		public void RemoveReference(TID referenceId)

@@ -37,7 +37,7 @@ namespace ServiceOrchestrating.Application
 			#endregion
 
 			#region Note Taking
-			ServiceCollection.AddSingleton<INeuronEditorAPI, NeuronEditorAPI>();
+			ServiceCollection.AddSingleton<INeuronEditor, NeuronEditor>();
 			ServiceCollection.AddSingleton<INeuronRepository, NeuronRepository>();
 			///ServiceCollection.AddDbContext<SQLiteNeuronDbContext>(serviceProvider =>{return new SQLiteNeuronDbContext(""); });
 			ServiceCollection.AddSingleton<NeuronDomainService>();
