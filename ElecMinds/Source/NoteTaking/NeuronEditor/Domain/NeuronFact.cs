@@ -37,6 +37,11 @@ namespace NoteTaking.Domain
 			neuron.Write(neuronData);
 			return neuron;
 		}
+		public Neuron MakeNeuron(TID neuronId)
+		{
+			_repo.RecoverNeuron(neuronId);
+			return _repo.FetchNeuron(neuronId);
+		}
 		public LinkData MakeLink(LinkData linkData)
 		{
 			TID linkId = (TID)linkData.Id;
@@ -53,6 +58,11 @@ namespace NoteTaking.Domain
 			link.Write(linkData);
 			return link;
 		}
+		public LinkData MakeLink(TID linkId)
+		{
+			_repo.RecoverLink(linkId);
+			return _repo.FetchLink(linkId);
+		}
 		public ReferenceData MakeReference(ReferenceData referenceData)
 		{
 			TID referenceId = (TID)referenceData.Id;
@@ -68,6 +78,11 @@ namespace NoteTaking.Domain
 			}
 			reference.Write(referenceData);
 			return reference;
+		}
+		public ReferenceData MakeReference(TID referenceId)
+		{
+			_repo.RecoverReference(referenceId);
+			return _repo.FetchReference(referenceId);
 		}
 	}
 }

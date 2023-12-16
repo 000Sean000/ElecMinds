@@ -15,11 +15,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Config;
 using NoteTaking.Domain;
 using DTOs;
+using Newtonsoft.Json;
+using Enums;
 
 #endregion
 
 namespace NoteTaking.Infrastructure
 {
+	// properties which cannot be mapped will be ignore and have no warning!
+	// List<PrimitiveType> => need conversion for serialization/deserialization with json string
+	// List<ComplexType> => use OwnsMany() method to give it a respective table
+	// ComplexType (Object) => use OwnsOne() mehtod to flatten to columns
+	// Enum => int by default
 	public class SQLiteNeuronDbContext : DbContext
 	{
 		protected readonly string _connectionString;
@@ -50,9 +57,19 @@ namespace NoteTaking.Infrastructure
 			modelBuilder.Entity<UnusedLinkId>().ToTable("UnusedLinkIds");
 			modelBuilder.Entity<UnusedReferenceId>().ToTable("UnusedReferenceIds");
 
-			modelBuilder.Entity<Neuron>().ToTable("Neurons")
+			modelBuilder.Entity<Neuron>().ToTable("Neurons");
+			modelBuilder.Entity<LinkData>().ToTable("Links");
+			modelBuilder.Entity<ReferenceData>().ToTable("References");
+
+			#region Neuron
+			modelBuilder.Entity<Neuron>()
 				.Ignore(n => n.IsLoadingDB)
 				.HasKey(n => n.Id);
+			modelBuilder.Entity<Neuron>()
+				.OwnsOne(n => n.NoteData, noteData =>
+				{
+					noteData.OwnsMany(n => n.Segments);
+				});
 			modelBuilder.Entity<Neuron>()
 				.HasMany(n => n.OutLinkDatas)
 				.WithOne()
@@ -65,13 +82,34 @@ namespace NoteTaking.Infrastructure
 				.WithOne()
 				.HasForeignKey(r => r.SourceNeuronId)
 				.HasForeignKey(r => r.TargetNeuronId);
+			modelBuilder.Entity<Neuron>()
+				.Property(n => n.InLinkIds)
+				.HasConversion(
+					v => JsonConvert.SerializeObject(v),
+					v => JsonConvert.DeserializeObject<List<TID>>(v) ?? new List<TID>()
+				);
+			modelBuilder.Entity<Neuron>()
+				.Property(n => n.InReferenceIds)
+				.HasConversion(
+					v => JsonConvert.SerializeObject(v),
+					v => JsonConvert.DeserializeObject<List<TID>>(v) ?? new List<TID>()
+				);
 
-			modelBuilder.Entity<LinkData>().ToTable("Links")
-				.HasKey(x => x.Id);
-			
-			modelBuilder.Entity<ReferenceData>().ToTable("References")
-				.HasKey(x => x.Id);
-
+			#endregion
+			#region Link
+			modelBuilder.Entity<LinkData>()
+				.HasKey(l => l.Id);
+			modelBuilder.Entity<LinkData>()
+				.Property(l => l.LinkInfo)
+				.HasConversion(
+					v => JsonConvert.SerializeObject(v),
+					v => JsonConvert.DeserializeObject<Dictionary<ELinkInfoIndex, string>>(v) ?? new Dictionary<ELinkInfoIndex, string>()
+					);
+			#endregion
+			#region Reference
+			modelBuilder.Entity<ReferenceData>()
+				.HasKey(r => r.Id);
+			#endregion
 			// ... Other configurations ...
 		}
 

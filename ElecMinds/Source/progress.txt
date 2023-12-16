@@ -11,10 +11,12 @@
 		- database should handle entity tracking => sync member entities and entityDatas
 		- database only can access entityData from aggregate root
 		- 
-+ shorter feed() and recover() of TrashCan, eliminate some parameters
+
 
 # done
-re-define domain model with ICollection to fit entity framework automation
+
++ shorter feed() and recover() of TrashCan, eliminate some parameters
++re-define domain model with ICollection to fit entity framework automation
 
 call Neuron Aggregate as Neuron
 add TID generic
@@ -24,3 +26,6 @@ add TID generic
 Links and References are dictionary, so they cannot fit database well, 
 they still need backing properties to interact with database, 
 that is LinkData and ReferenceData.
+
+
+Wuchiehmu581220

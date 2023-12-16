@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
+
 #region Dependency
 
 using Config;
 using Enums;
 using DTOs;
 using Config;
-using System.ComponentModel.DataAnnotations.Schema;
 using PKG;
 #endregion
 
@@ -30,36 +31,8 @@ namespace NoteTaking.Domain
 		protected List<LinkData> _OutLinkDatas;
 		protected List<ReferenceData> _OutReferenceDatas;
 		public virtual List<LinkData>? OutLinkDatas { get; set; }
-		public virtual List<TID>? OutLinkIds // for what? foreign key cannot config
-		{
-			get
-			{
-				if (OutLinkDatas == null)
-				{
-					return null;
-				}
-				else
-				{
-					return OutLinkDatas.Select(link => (TID)link.Id).ToList();
-				}
-			}
-		}
 		public List<TID>? InLinkIds { get; set; } 
 		public virtual List<ReferenceData>? OutReferenceDatas { get; set; }
-		public List<TID>? OutReferenceIds
-		{
-			get
-			{
-				if (OutReferenceDatas == null)
-				{
-					return null;
-				}
-				else
-				{
-					return OutReferenceDatas.Select(reference => (TID)reference.Id).ToList();	
-				}
-			}
-		}
 		public List<TID>? InReferenceIds { get; set; } 
 		#endregion
 

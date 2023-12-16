@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Source\DataStructuring\Feature\Application\" />
+    <Folder Include="Source\DataStructuring\Feature\Infrastructure\" />
+    <Folder Include="Source\DataStructuring\Feature\UserInterface\" />
     <Folder Include="Source\BoundedContext\Feature\Application\" />
     <Folder Include="Source\BoundedContext\Feature\Domain\" />
     <Folder Include="Source\BoundedContext\Feature\Infrastructure\" />
